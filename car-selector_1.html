@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Selector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F4F0;
+      --surface: #FFFFFF;
+      --border: #E0DDD6;
+      --border-focus: #2C2C2A;
+      --text-primary: #1A1A18;
+      --text-secondary: #6B6A65;
+      --text-muted: #A09E99;
+      --accent: #1A1A18;
+      --accent-fg: #F5F4F0;
+      --success-bg: #EAF3DE;
+      --success-text: #27500A;
+      --radius: 10px;
+      --font: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 2rem 1.75rem;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .field {
+      margin-bottom: 1.1rem;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      background: var(--border);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .step-badge.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .step-badge.done {
+      background: #639922;
+      color: #fff;
+    }
+
+    select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.65rem 2.5rem 0.65rem 0.9rem;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A09E99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
+    }
+
+    select:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      min-height: 16px;
+      font-family: var(--font-mono);
+    }
+
+    .hint.loading::after {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid var(--text-muted);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0 1.25rem;
+    }
+
+    .result-block {
+      background: var(--success-bg);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      display: none;
+      animation: fadeUp 0.2s ease;
+    }
+
+    .result-block.visible { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--success-text);
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .result-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--success-text);
+    }
+
+    .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(99,153,34,0.15);
+      color: var(--success-text);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      background: var(--surface);
+      color: var(--text-primary);
+    }
+
+    .btn:hover { background: var(--bg); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover { background: #333330; }
+
+    .footer-note {
+      margin-top: 1.5rem;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      font-family: var(--font-mono);
+    }
+
+    .footer-note a {
+      color: var(--text-secondary);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <p class="eyebrow">Vehicle lookup</p>
+    <h1 class="card-title">Select your vehicle</h1>
+  </div>
+
+  <!-- Make -->
+  <div class="field">
+    <label for="make-select">
+      <span class="step-badge active" id="badge-1">1</span>
+      Make
+    </label>
+    <select id="make-select" aria-label="Vehicle make">
+      <option value="">Loading makes…</option>
+    </select>
+    <p class="hint loading" id="make-hint">Fetching from NHTSA database</p>
+  </div>
+
+  <!-- Model -->
+  <div class="field">
+    <label for="model-select">
+      <span class="step-badge" id="badge-2">2</span>
+      Model
+    </label>
+    <select id="model-select" disabled aria-label="Vehicle model">
+      <option value="">Select a make first</option>
+    </select>
+    <p class="hint" id="model-hint"></p>
+  </div>
+
+  <!-- Year -->
+  <div class="field">
+    <label for="year-select">
+      <span class="step-badge" id="badge-3">3</span>
+      Year
+    </label>
+    <select id="year-select" disabled aria-label="Vehicle year">
+      <option value="">Select a model first</option>
+    </select>
+    <p class="hint" id="year-hint"></p>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Result -->
+  <div class="result-block" id="result-block" role="status" aria-live="polite">
+    <p class="result-label">Selected vehicle</p>
+    <p class="result-value" id="result-text">—</p>
+    <div class="tags">
+      <span class="tag" id="tag-make"></span>
+      <span class="tag" id="tag-model"></span>
+      <span class="tag" id="tag-year"></span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="copyResult()" id="copy-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button class="btn" onclick="resetForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.15"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden field for JotForm integration -->
+  <input type="hidden" id="jotform-vehicle-value" name="vehicle" value="" />
+
+  <p class="footer-note">
+    Data sourced from the <a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vPIC API</a>
+  </p>
+</div>
+
+<script>
+  const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles';
+
+  const makeSelect  = document.getElementById('make-select');
+  const modelSelect = document.getElementById('model-select');
+  const yearSelect  = document.getElementById('year-select');
+  const makeHint    = document.getElementById('make-hint');
+  const modelHint   = document.getElementById('model-hint');
+  const yearHint    = document.getElementById('year-hint');
+  const resultBlock = document.getElementById('result-block');
+  const resultText  = document.getElementById('result-text');
+  const hiddenField = document.getElementById('jotform-vehicle-value');
+
+  function setBadge(n, state) {
+    const b = document.getElementById('badge-' + n);
+    b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
+    if (state === 'done') b.innerHTML = '&#10003;';
+    else b.textContent = n;
+  }
+
+  const POPULAR_MAKES = [
+    'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
+    'Ford','GMC','Honda','Hyundai','Infiniti','Jeep','Kia','Lexus','Lincoln',
+    'Mazda','Mercedes-Benz','Mitsubishi','Nissan','Ram','Subaru','Tesla',
+    'Toyota','Volkswagen','Volvo'
+  ];
+
+  let allMakesCache = [];
+  let showingAll = false;
+
+  function populateMakeSelect(makes) {
+    makeSelect.innerHTML = '<option value="">— Select make —</option>';
+    makes.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.Make_ID;
+      o.dataset.name = m.Make_Name;
+      o.textContent = m.Make_Name;
+      makeSelect.appendChild(o);
+    });
+  }
+
+  async function loadMakes() {
+    makeHint.className = 'hint loading';
+    makeHint.textContent = 'Fetching from NHTSA database';
+    try {
+      const res  = await fetch(`${NHTSA}/GetAllMakes?format=json`);
+      const data = await res.json();
+      allMakesCache = data.Results.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
+
+      const popular = allMakesCache.filter(m =>
+        POPULAR_MAKES.some(p => p.toLowerCase() === m.Make_Name.toLowerCase())
+      ).sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
+
+      populateMakeSelect(popular);
+      makeHint.className = 'hint';
+      makeHint.innerHTML = popular.length + ' popular makes shown &mdash; <a href="#" id="toggle-makes" style="color:var(--text-secondary);text-decoration:underline;text-underline-offset:2px;">show all ' + allMakesCache.length.toLocaleString() + '</a>';
+
+      document.getElementById('toggle-makes').addEventListener('click', function(e) {
+        e.preventDefault();
+        showingAll = !showingAll;
+        populateMakeSelect(showingAll ? allMakesCache : popular);
+        this.textContent = showingAll
+          ? 'show popular only'
+          : 'show all ' + allMakesCache.length.toLocaleString();
+        resetBelowMake();
+      });
+    } catch (e) {
+      makeHint.className = 'hint';
+      makeHint.textContent = 'Error loading makes. Check your connection.';
+    }
+  }
+
+  async function loadModels(makeId, makeName) {
+    modelSelect.disabled = true;
+    modelSelect.innerHTML = '<option value="">Loading models…</option>';
+    modelHint.className = 'hint loading';
+    modelHint.textContent = 'Fetching models';
+    yearSelect.disabled = true;
+    yearSelect.innerHTML = '<option value="">Select a model first</option>';
+    yearHint.textContent = '';
+    try {
+      const res  = await fetch(`${NHTSA}/GetModelsForMakeId/${makeId}?format=json`);
+      const data = await res.json();
+      const models = data.Results.sort((a, b) => a.Model_Name.localeCompare(b.Model_Name));
+      modelSelect.innerHTML = '<option value="">— Select model —</option>';
+      models.forEach(m => {
+        const o = document.createElement('option');
+        o.value = m.Model_Name;
+        o.textContent = m.Model_Name;
+        modelSelect.appendChild(o);
+      });
+      modelSelect.disabled = false;
+      modelHint.className = 'hint';
+      modelHint.textContent = models.length + ' models for ' + makeName;
+      setBadge(1, 'done');
+      setBadge(2, 'active');
+    } catch (e) {
+      modelHint.className = 'hint';
+      modelHint.textContent = 'Error loading models.';
+    }
+  }
+
+  function loadYears() {
+    const currentYear = new Date().getFullYear() + 1;
+    yearSelect.innerHTML = '<option value="">— Select year —</option>';
+    for (let y = currentYear; y >= 1981; y--) {
+      const o = document.createElement('option');
+      o.value = y;
+      o.textContent = y;
+      yearSelect.appendChild(o);
+    }
+    yearSelect.disabled = false;
+    yearHint.className = 'hint';
+    yearHint.textContent = (currentYear - 1981 + 1) + ' model years (1981–' + currentYear + ')';
+    setBadge(2, 'done');
+    setBadge(3, 'active');
+  }
+
+  function updateResult() {
+    const makeOpt  = makeSelect.options[makeSelect.selectedIndex];
+    const makeName = makeOpt ? makeOpt.dataset.name || makeOpt.text : '';
+    const modelVal = modelSelect.value;
+    const yearVal  = yearSelect.value;
+
+    if (makeName && makeName !== '— Select make —' && modelVal && yearVal) {
+      const vehicle = yearVal + ' ' + makeName + ' ' + modelVal;
+      resultText.textContent = vehicle;
+      document.getElementById('tag-make').textContent  = makeName;
+      document.getElementById('tag-model').textContent = modelVal;
+      document.getElementById('tag-year').textContent  = yearVal;
+      hiddenField.value = vehicle;
+      resultBlock.classList.add('visible');
+      setBadge(3, 'done');
+
+      /* JotForm postMessage integration — passes value to parent form */
+      if (window.parent !== window) {
+        window.parent.postMessage(JSON.stringify({
+          type: 'widgetEvent',
+          value: vehicle,
+          valid: true
+        }), '*');
+      }
+    } else {
+      resultBlock.classList.remove('visible');
+      hiddenField.value = '';
+    }
+  }
+
+  function copyResult() {
+    const text = resultText.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+      }, 1800);
+    }).catch(() => {
+      alert('Could not copy. Please copy manually: ' + resultText.textContent);
+    });
+  }
+
+  function resetForm() {
+    makeSelect.value  = '';
+    modelSelect.innerHTML = '<option value="">Select a make first</option>';
+    modelSelect.disabled  = true;
+    yearSelect.innerHTML  = '<option value="">Select a model first</option>';
+    yearSelect.disabled   = true;
+    modelHint.textContent = '';
+    yearHint.textContent  = '';
+    hiddenField.value     = '';
+    resultBlock.classList.remove('visible');
+    setBadge(1, 'active');
+    setBadge(2, '');
+    setBadge(3, '');
+  }
+
+  makeSelect.addEventListener('change', function () {
+    resetBelowMake();
+    if (this.value) {
+      const name = this.options[this.selectedIndex].dataset.name || this.options[this.selectedIndex].text;
+      loadModels(this.value, name);
+    }
+  });
+
+  modelSelect.addEventListener('change', function () {
+    yearSelect.innerHTML = '<option value="">Select a model first</option>';
+    yearSelect.disabled  = true;
+    yearHint.textContent = '';
+    resultBlock.classList.remove('visible');
+    if (this.value) loadYears();
+    updateResult();
+  });
+
+  yearSelect.addEventListener('change', updateResult);
+
+  function resetBelowMake() {
+    modelSelect.innerHTML = '<option value="">Select a make first</option>';
+    modelSelect.disabled  = true;
+    yearSelect.innerHTML  = '<option value="">Select a model first</option>';
+    yearSelect.disabled   = true;
+    modelHint.textContent = '';
+    yearHint.textContent  = '';
+    resultBlock.classList.remove('visible');
+    hiddenField.value     = '';
+    setBadge(2, '');
+    setBadge(3, '');
+  }
+
+  loadMakes();
+</script>
+</body>
+</html>
