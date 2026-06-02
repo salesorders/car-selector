@@ -471,12 +471,22 @@
       resultBlock.classList.add('visible');
       setBadge(3, 'done');
 
-      /* JotForm postMessage integration — passes value to parent form */
+      /* JotForm postMessage integration — passes combined vehicle string to one field */
       if (window.parent !== window) {
+        // Sends the combined value (e.g. "2021 Toyota Camry") to the widget field
         window.parent.postMessage(JSON.stringify({
           type: 'widgetEvent',
           value: vehicle,
           valid: true
+        }), '*');
+
+        // Also sets a single JotForm text field with the combined value.
+        // Replace 'vehicleSelection' with the Unique Name of your JotForm field:
+        // click the field → Properties → Advanced → Unique Name
+        window.parent.postMessage(JSON.stringify({
+          type: 'setFieldValue',
+          fieldName: 'vehicleSelection',  // <- replace with your JotForm field name
+          value: vehicle
         }), '*');
       }
     } else {
