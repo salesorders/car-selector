@@ -137,6 +137,14 @@ function init() {
   });
   makeHint.textContent = makes.length + ' makes available';
   setBadge(1, 'active');
+
+  // Tell JotForm how tall the widget is so the iframe resizes to fit.
+  // Without this the iframe stays at its default height and clips the dropdowns.
+  if (insideJotForm) {
+    JFCustomWidget.requestFrameResize({
+      height: document.body.scrollHeight + 20
+    });
+  }
 }
 
 if (insideJotForm) {
@@ -160,6 +168,12 @@ function setBadge(n, state) {
 
 function sendValue(val) {
   if (insideJotForm) JFCustomWidget.sendData({ value: val });
+}
+
+function resizeFrame() {
+  if (insideJotForm) {
+    JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+  }
 }
 
 makeSelect.addEventListener('change', function() {
@@ -227,6 +241,7 @@ yearSelect.addEventListener('change', function() {
     resultBlock.classList.add('visible');
     setBadge(3, 'done');
     sendValue(vehicle);
+    resizeFrame();
   } else {
     currentValue = ''; resultBlock.classList.remove('visible'); sendValue('');
   }
