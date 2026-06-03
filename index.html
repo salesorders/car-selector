@@ -10,270 +10,144 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #F5F4F0;
-      --surface: #FFFFFF;
-      --border: #E0DDD6;
-      --border-focus: #2C2C2A;
-      --text-primary: #1A1A18;
-      --text-secondary: #6B6A65;
-      --text-muted: #A09E99;
-      --accent: #1A1A18;
-      --accent-fg: #F5F4F0;
-      --success-bg: #EAF3DE;
-      --success-text: #27500A;
-      --radius: 10px;
-      --font: 'DM Sans', sans-serif;
-      --font-mono: 'DM Mono', monospace;
+      --bg: #F5F4F0; --surface: #FFFFFF; --border: #E0DDD6;
+      --border-focus: #2C2C2A; --text-primary: #1A1A18;
+      --text-secondary: #6B6A65; --text-muted: #A09E99;
+      --accent: #1A1A18; --accent-fg: #F5F4F0;
+      --success-bg: #EAF3DE; --success-text: #27500A;
+      --highlight: #E8F0FE;
+      --radius: 10px; --font: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
     }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem 2rem 1.75rem;
-      width: 100%;
-      max-width: 480px;
-    }
-
-    .card-header { margin-bottom: 1.75rem; }
-
-    .eyebrow {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .card-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .field { margin-bottom: 1.1rem; }
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .step-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      background: var(--border);
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-      transition: background 0.2s, color 0.2s;
-    }
-
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); padding: 2rem 1rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2rem 1.75rem; width: 100%; max-width: 480px; margin: 0 auto; }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .card-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 1.75rem; }
+    .field { margin-bottom: 1.1rem; position: relative; }
+    label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--border); border-radius: 50%; font-size: 10px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; transition: background 0.2s, color 0.2s; }
     .step-badge.active { background: var(--accent); color: var(--accent-fg); }
     .step-badge.done   { background: #639922; color: #fff; }
+    .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; min-height: 16px; font-family: var(--font-mono); }
 
-    select {
-      width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.65rem 2.5rem 0.65rem 0.9rem;
-      font-family: var(--font);
-      font-size: 15px;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A09E99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
+    /* ── Custom dropdown ── */
+    .dd { position: relative; }
+    .dd-trigger {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.65rem 0.9rem; font-family: var(--font); font-size: 15px;
+      color: var(--text-primary); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+      text-align: left; user-select: none;
     }
+    .dd-trigger:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(26,26,24,0.08); }
+    .dd-trigger.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .dd-trigger.open { border-color: var(--border-focus); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .dd-arrow { flex-shrink: 0; transition: transform 0.2s; }
+    .dd-trigger.open .dd-arrow { transform: rotate(180deg); }
+    .dd-trigger .placeholder { color: var(--text-muted); }
 
-    select:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
+    .dd-list {
+      display: none; position: relative;
+      background: var(--surface); border: 1px solid var(--border-focus);
+      border-top: none; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);
+      max-height: 220px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
-
-    select:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 5px;
-      min-height: 16px;
-      font-family: var(--font-mono);
+    .dd-list.open { display: block; }
+    .dd-search {
+      padding: 8px 10px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--surface); z-index: 1;
     }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 1.5rem 0 1.25rem;
+    .dd-search input {
+      width: 100%; border: 1px solid var(--border); border-radius: 6px;
+      padding: 5px 8px; font-family: var(--font); font-size: 13px;
+      color: var(--text-primary); background: var(--bg);
     }
-
-    .result-block {
-      background: var(--success-bg);
-      border-radius: var(--radius);
-      padding: 1rem 1.1rem;
-      display: none;
-      animation: fadeUp 0.2s ease;
+    .dd-search input:focus { outline: none; border-color: var(--border-focus); }
+    .dd-options { padding: 4px 0; }
+    .dd-option {
+      padding: 9px 14px; font-size: 14px; cursor: pointer;
+      color: var(--text-primary); transition: background 0.1s;
     }
+    .dd-option:hover { background: var(--highlight); }
+    .dd-option.selected { background: var(--highlight); font-weight: 500; }
+    .dd-option.hidden { display: none; }
+    .dd-empty { padding: 10px 14px; font-size: 13px; color: var(--text-muted); font-family: var(--font-mono); }
 
+    /* ── Result ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0 1.25rem; }
+    .result-block { background: var(--success-bg); border-radius: var(--radius); padding: 1rem 1.1rem; display: none; animation: fadeUp 0.2s ease; }
     .result-block.visible { display: block; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--success-text);
-      opacity: 0.7;
-      margin-bottom: 4px;
-    }
-
-    .result-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--success-text);
-    }
-
-    .tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .tag {
-      display: inline-block;
-      background: rgba(99,153,34,0.15);
-      color: var(--success-text);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-family: var(--font-mono);
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      background: var(--surface);
-      color: var(--text-primary);
-    }
-
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--success-text); opacity: 0.7; margin-bottom: 4px; }
+    .result-value { font-size: 18px; font-weight: 600; color: var(--success-text); }
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .tag { display: inline-block; background: rgba(99,153,34,0.15); color: var(--success-text); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); }
+    .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: background 0.15s; background: var(--surface); color: var(--text-primary); }
     .btn:hover { background: var(--bg); }
-    .btn:active { transform: scale(0.97); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
-
+    .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
     .btn-primary:hover { background: #333330; }
-
-    .footer-note {
-      margin-top: 1.5rem;
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: center;
-      font-family: var(--font-mono);
-    }
+    .footer-note { margin-top: 1.5rem; font-size: 11px; color: var(--text-muted); text-align: center; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
-
 <div class="card">
-  <div class="card-header">
-    <p class="eyebrow">Vehicle lookup</p>
-    <h1 class="card-title">Select your vehicle</h1>
-  </div>
+  <p class="eyebrow">Vehicle lookup</p>
+  <h1 class="card-title">Select your vehicle</h1>
 
+  <!-- Make -->
   <div class="field">
-    <label for="make-select">
-      <span class="step-badge active" id="badge-1">1</span>
-      Make
-    </label>
-    <select id="make-select" aria-label="Vehicle make">
-      <option value="">— Select make —</option>
-    </select>
+    <label><span class="step-badge active" id="badge-1">1</span> Make</label>
+    <div class="dd" id="dd-make">
+      <button class="dd-trigger" id="make-trigger" type="button" aria-haspopup="listbox">
+        <span id="make-label" class="placeholder">— Select make —</span>
+        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dd-list" id="make-list" role="listbox">
+        <div class="dd-search"><input type="text" id="make-search" placeholder="Search makes…" autocomplete="off" /></div>
+        <div class="dd-options" id="make-options"></div>
+      </div>
+    </div>
     <p class="hint" id="make-hint"></p>
   </div>
 
+  <!-- Model -->
   <div class="field">
-    <label for="model-select">
-      <span class="step-badge" id="badge-2">2</span>
-      Model
-    </label>
-    <select id="model-select" disabled aria-label="Vehicle model">
-      <option value="">Select a make first</option>
-    </select>
+    <label><span class="step-badge" id="badge-2">2</span> Model</label>
+    <div class="dd" id="dd-model">
+      <button class="dd-trigger disabled" id="model-trigger" type="button" aria-haspopup="listbox">
+        <span id="model-label" class="placeholder">Select a make first</span>
+        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dd-list" id="model-list" role="listbox">
+        <div class="dd-search"><input type="text" id="model-search" placeholder="Search models…" autocomplete="off" /></div>
+        <div class="dd-options" id="model-options"></div>
+      </div>
+    </div>
     <p class="hint" id="model-hint"></p>
   </div>
 
+  <!-- Year -->
   <div class="field">
-    <label for="year-select">
-      <span class="step-badge" id="badge-3">3</span>
-      Year
-    </label>
-    <select id="year-select" disabled aria-label="Vehicle year">
-      <option value="">Select a model first</option>
-    </select>
+    <label><span class="step-badge" id="badge-3">3</span> Year</label>
+    <div class="dd" id="dd-year">
+      <button class="dd-trigger disabled" id="year-trigger" type="button" aria-haspopup="listbox">
+        <span id="year-label" class="placeholder">Select a model first</span>
+        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dd-list" id="year-list" role="listbox">
+        <div class="dd-options" id="year-options"></div>
+      </div>
+    </div>
     <p class="hint" id="year-hint"></p>
   </div>
 
   <hr class="divider" />
 
-  <div class="result-block" id="result-block" role="status" aria-live="polite">
+  <div class="result-block" id="result-block">
     <p class="result-label">Selected vehicle</p>
-    <p class="result-value" id="result-text">—</p>
+    <p class="result-value" id="result-text"></p>
     <div class="tags">
       <span class="tag" id="tag-make"></span>
       <span class="tag" id="tag-model"></span>
@@ -284,7 +158,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy
       </button>
-      <button class="btn" onclick="resetForm()">
+      <button class="btn" onclick="resetAll()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.15"/></svg>
         Reset
       </button>
@@ -326,26 +200,205 @@ const VEHICLE_DATA = {
 };
 
 const makes = Object.keys(VEHICLE_DATA).sort();
-const makeSelect  = document.getElementById('make-select');
-const modelSelect = document.getElementById('model-select');
-const yearSelect  = document.getElementById('year-select');
-const makeHint    = document.getElementById('make-hint');
-const modelHint   = document.getElementById('model-hint');
-const yearHint    = document.getElementById('year-hint');
-const resultBlock = document.getElementById('result-block');
-const resultText  = document.getElementById('result-text');
-
-let currentValue = '';
+let selectedMake = '', selectedModel = '', selectedYear = '', currentValue = '';
 const insideJotForm = (window.self !== window.top);
 
-function init() {
-  makes.forEach(make => {
-    const o = document.createElement('option');
-    o.value = make; o.textContent = make;
-    makeSelect.appendChild(o);
+
+function closeAll() {
+  ['make-list','model-list','year-list'].forEach(id => {
+    document.getElementById(id).classList.remove('open');
   });
-  makeHint.textContent = makes.length + ' makes available';
+  ['make-trigger','model-trigger','year-trigger'].forEach(id => {
+    document.getElementById(id).classList.remove('open');
+  });
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.dd')) closeAll();
+});
+
+// ── Badge helper ─────────────────────────────────────────────────────────
+function setBadge(n, state) {
+  const b = document.getElementById('badge-' + n);
+  b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
+  b.innerHTML = state === 'done' ? '&#10003;' : n;
+}
+
+function sendValue(val) {
+  if (insideJotForm) JFCustomWidget.sendData({ value: val });
+}
+
+function resizeFrame() {
+  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+}
+
+// ── Make dropdown ─────────────────────────────────────────────────────────
+function renderMakes(filter) {
+  const optWrap = document.getElementById('make-options');
+  optWrap.innerHTML = '';
+  const filtered = filter ? makes.filter(m => m.toLowerCase().includes(filter.toLowerCase())) : makes;
+  if (!filtered.length) { optWrap.innerHTML = '<div class="dd-empty">No results</div>'; return; }
+  filtered.forEach(function(make) {
+    const div = document.createElement('div');
+    div.className = 'dd-option';
+    div.textContent = make;
+    div.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      closeAll();
+      onMakeSelect(make);
+    });
+    optWrap.appendChild(div);
+  });
+}
+
+document.getElementById('make-trigger').addEventListener('click', function() {
+  const list = document.getElementById('make-list');
+  if (list.classList.contains('open')) { closeAll(); return; }
+  closeAll();
+  renderMakes('');
+  list.classList.add('open');
+  this.classList.add('open');
+  const searchEl = document.getElementById('make-search');
+  searchEl.value = ''; searchEl.focus();
+  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
+});
+
+document.getElementById('make-search').addEventListener('input', function() {
+  renderMakes(this.value);
+});
+
+function onMakeSelect(make) {
+  selectedMake  = make;
+  selectedModel = '';
+  selectedYear  = '';
+  currentValue  = '';
+
+  document.getElementById('make-label').textContent = make;
+  document.getElementById('make-label').classList.remove('placeholder');
+  document.getElementById('make-hint').textContent = VEHICLE_DATA[make].length + ' models available';
+
+  // Reset model
+  const modelTrigger = document.getElementById('model-trigger');
+  document.getElementById('model-label').textContent = '— Select model —';
+  document.getElementById('model-label').classList.add('placeholder');
+  document.getElementById('model-hint').textContent = '';
+  modelTrigger.classList.remove('disabled');
+
+  // Reset year
+  document.getElementById('year-trigger').classList.add('disabled');
+  document.getElementById('year-label').textContent = 'Select a model first';
+  document.getElementById('year-label').classList.add('placeholder');
+  document.getElementById('year-hint').textContent = '';
+
+  document.getElementById('result-block').classList.remove('visible');
+  sendValue('');
+  setBadge(1, 'done'); setBadge(2, 'active'); setBadge(3, '');
+  resizeFrame();
+}
+
+// ── Model dropdown ────────────────────────────────────────────────────────
+function renderModels(filter) {
+  const models  = VEHICLE_DATA[selectedMake] || [];
+  const optWrap = document.getElementById('model-options');
+  optWrap.innerHTML = '';
+  const filtered = filter ? models.filter(m => m.toLowerCase().includes(filter.toLowerCase())) : models;
+  if (!filtered.length) { optWrap.innerHTML = '<div class="dd-empty">No results</div>'; return; }
+  filtered.forEach(function(model) {
+    const div = document.createElement('div');
+    div.className = 'dd-option';
+    div.textContent = model;
+    div.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      closeAll();
+      selectedModel = model;
+      selectedYear  = '';
+      currentValue  = '';
+
+      document.getElementById('model-label').textContent = model;
+      document.getElementById('model-label').classList.remove('placeholder');
+      document.getElementById('model-hint').textContent = '';
+
+      document.getElementById('year-trigger').classList.remove('disabled');
+      document.getElementById('year-label').textContent = '— Select year —';
+      document.getElementById('year-label').classList.remove('placeholder');
+      document.getElementById('year-hint').textContent = 'Model years 1981–' + (new Date().getFullYear() + 1);
+
+      document.getElementById('result-block').classList.remove('visible');
+      sendValue('');
+      setBadge(2, 'done'); setBadge(3, 'active');
+      resizeFrame();
+    });
+    optWrap.appendChild(div);
+  });
+}
+
+document.getElementById('model-trigger').addEventListener('click', function() {
+  if (this.classList.contains('disabled')) return;
+  const list = document.getElementById('model-list');
+  if (list.classList.contains('open')) { closeAll(); return; }
+  closeAll();
+  list.classList.add('open');
+  this.classList.add('open');
+  renderModels('');
+  const searchEl = document.getElementById('model-search');
+  searchEl.value = '';
+  searchEl.focus();
+  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
+});
+
+document.getElementById('model-search').addEventListener('input', function() {
+  renderModels(this.value);
+});
+
+// ── Year dropdown ─────────────────────────────────────────────────────────
+function renderYears() {
+  const optWrap = document.getElementById('year-options');
+  optWrap.innerHTML = '';
+  const currentYear = new Date().getFullYear() + 1;
+  for (let y = currentYear; y >= 1981; y--) {
+    const div = document.createElement('div');
+    div.className = 'dd-option';
+    div.textContent = y;
+    div.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      closeAll();
+      selectedYear = String(y);
+      const vehicle = selectedYear + ' ' + selectedMake + ' ' + selectedModel;
+      currentValue  = vehicle;
+
+      document.getElementById('year-label').textContent = y;
+      document.getElementById('year-label').classList.remove('placeholder');
+
+      document.getElementById('result-text').textContent = vehicle;
+      document.getElementById('tag-make').textContent  = selectedMake;
+      document.getElementById('tag-model').textContent = selectedModel;
+      document.getElementById('tag-year').textContent  = selectedYear;
+      document.getElementById('result-block').classList.add('visible');
+
+      setBadge(3, 'done');
+      sendValue(vehicle);
+      resizeFrame();
+    });
+    optWrap.appendChild(div);
+  }
+}
+
+document.getElementById('year-trigger').addEventListener('click', function() {
+  if (this.classList.contains('disabled')) return;
+  const list = document.getElementById('year-list');
+  if (list.classList.contains('open')) { closeAll(); return; }
+  closeAll();
+  renderYears();
+  list.classList.add('open');
+  this.classList.add('open');
+  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────
+function init() {
+  document.getElementById('make-hint').textContent = makes.length + ' makes available';
   setBadge(1, 'active');
+  resizeFrame();
 }
 
 if (insideJotForm) {
@@ -361,86 +414,7 @@ if (insideJotForm) {
   init();
 }
 
-function setBadge(n, state) {
-  const b = document.getElementById('badge-' + n);
-  b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
-  b.innerHTML = state === 'done' ? '&#10003;' : n;
-}
-
-function sendValue(val) {
-  if (insideJotForm) JFCustomWidget.sendData({ value: val });
-}
-
-makeSelect.addEventListener('change', function() {
-  const make = this.value;
-  modelSelect.innerHTML = '<option value="">— Select model —</option>';
-  yearSelect.innerHTML  = '<option value="">Select a model first</option>';
-  yearSelect.disabled   = true;
-  modelHint.textContent = '';
-  yearHint.textContent  = '';
-  resultBlock.classList.remove('visible');
-  currentValue = ''; sendValue('');
-  setBadge(2, ''); setBadge(3, '');
-
-  if (make) {
-    const models = VEHICLE_DATA[make] || [];
-    models.forEach(m => {
-      const o = document.createElement('option');
-      o.value = m; o.textContent = m;
-      modelSelect.appendChild(o);
-    });
-    modelSelect.disabled = false;
-    modelHint.textContent = models.length + ' models for ' + make;
-    setBadge(1, 'done'); setBadge(2, 'active');
-  } else {
-    modelSelect.innerHTML = '<option value="">Select a make first</option>';
-    modelSelect.disabled  = true;
-    setBadge(1, 'active');
-  }
-});
-
-modelSelect.addEventListener('change', function() {
-  yearSelect.innerHTML = '<option value="">— Select year —</option>';
-  yearHint.textContent = '';
-  resultBlock.classList.remove('visible');
-  currentValue = ''; sendValue('');
-  setBadge(3, '');
-
-  if (this.value) {
-    const currentYear = new Date().getFullYear() + 1;
-    for (let y = currentYear; y >= 1981; y--) {
-      const o = document.createElement('option');
-      o.value = y; o.textContent = y;
-      yearSelect.appendChild(o);
-    }
-    yearSelect.disabled = false;
-    yearHint.textContent = 'Model years 1981–' + currentYear;
-    setBadge(2, 'done'); setBadge(3, 'active');
-  } else {
-    yearSelect.innerHTML = '<option value="">Select a model first</option>';
-    yearSelect.disabled  = true;
-  }
-});
-
-yearSelect.addEventListener('change', function() {
-  const make  = makeSelect.value;
-  const model = modelSelect.value;
-  const year  = this.value;
-  if (make && model && year) {
-    const vehicle = year + ' ' + make + ' ' + model;
-    currentValue = vehicle;
-    resultText.textContent = vehicle;
-    document.getElementById('tag-make').textContent  = make;
-    document.getElementById('tag-model').textContent = model;
-    document.getElementById('tag-year').textContent  = year;
-    resultBlock.classList.add('visible');
-    setBadge(3, 'done');
-    sendValue(vehicle);
-  } else {
-    currentValue = ''; resultBlock.classList.remove('visible'); sendValue('');
-  }
-});
-
+// ── Copy & Reset ──────────────────────────────────────────────────────────
 function copyResult() {
   navigator.clipboard.writeText(currentValue).then(() => {
     const btn = document.getElementById('copy-btn');
@@ -449,16 +423,23 @@ function copyResult() {
   });
 }
 
-function resetForm() {
-  makeSelect.value = '';
-  modelSelect.innerHTML = '<option value="">Select a make first</option>';
-  modelSelect.disabled  = true;
-  yearSelect.innerHTML  = '<option value="">Select a model first</option>';
-  yearSelect.disabled   = true;
-  modelHint.textContent = ''; yearHint.textContent = '';
-  currentValue = ''; resultBlock.classList.remove('visible');
+function resetAll() {
+  selectedMake = ''; selectedModel = ''; selectedYear = ''; currentValue = '';
+  document.getElementById('make-label').textContent  = '— Select make —';
+  document.getElementById('make-label').classList.add('placeholder');
+  document.getElementById('model-label').textContent = 'Select a make first';
+  document.getElementById('model-label').classList.add('placeholder');
+  document.getElementById('year-label').textContent  = 'Select a model first';
+  document.getElementById('year-label').classList.add('placeholder');
+  document.getElementById('make-hint').textContent   = makes.length + ' makes available';
+  document.getElementById('model-hint').textContent  = '';
+  document.getElementById('year-hint').textContent   = '';
+  document.getElementById('model-trigger').classList.add('disabled');
+  document.getElementById('year-trigger').classList.add('disabled');
+  document.getElementById('result-block').classList.remove('visible');
   setBadge(1, 'active'); setBadge(2, ''); setBadge(3, '');
   sendValue('');
+  resizeFrame();
 }
 </script>
 </body>
