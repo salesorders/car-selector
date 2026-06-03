@@ -4,9 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Selector</title>
+
+  <!--
+    OPTIMIZATION 1: Load JotForm's official Widget API.
+    This gives us the JFCustomWidget object which handles all
+    postMessage communication correctly with the parent form.
+    Without this, JotForm ignores any messages the iframe sends.
+  -->
+  <script src="https://cdn.jotfor.ms/static/prototype.forms.js"></script>
+  <script src="https://cdn.jotfor.ms/static/jotform.forms.js"></script>
+  <script src="https://cdn.jotfor.ms/js/vendor/jquery-1.10.2.min.js"></script>
+  <script src="https://cdn.jotfor.ms/js/widgets.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -27,47 +40,26 @@
       --font-mono: 'DM Mono', monospace;
     }
 
+    /*
+      OPTIMIZATION 3: Remove centered card layout and min-height: 100vh.
+      Inside JotForm's iframe the widget must be flush and compact —
+      no centering, no full-height body, no card border/shadow.
+      This prevents unwanted scrollbars and wasted whitespace in the form.
+    */
     body {
       font-family: var(--font);
-      background: var(--bg);
+      background: transparent;
       color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
+      padding: 0.5rem 0;
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem 2rem 1.75rem;
+    .widget-wrap {
       width: 100%;
-      max-width: 480px;
-    }
-
-    .card-header {
-      margin-bottom: 1.75rem;
-    }
-
-    .eyebrow {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .card-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text-primary);
+      max-width: 100%;
     }
 
     .field {
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
     }
 
     label {
@@ -97,15 +89,8 @@
       transition: background 0.2s, color 0.2s;
     }
 
-    .step-badge.active {
-      background: var(--accent);
-      color: var(--accent-fg);
-    }
-
-    .step-badge.done {
-      background: #639922;
-      color: #fff;
-    }
+    .step-badge.active { background: var(--accent); color: var(--accent-fg); }
+    .step-badge.done   { background: #639922; color: #fff; }
 
     select {
       width: 100%;
@@ -131,10 +116,7 @@
       box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
     }
 
-    select:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    select:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .hint {
       font-size: 12px;
@@ -162,7 +144,7 @@
     .divider {
       border: none;
       border-top: 1px solid var(--border);
-      margin: 1.5rem 0 1.25rem;
+      margin: 1.25rem 0 1rem;
     }
 
     .result-block {
@@ -248,10 +230,9 @@
     .btn-primary:hover { background: #333330; }
 
     .footer-note {
-      margin-top: 1.5rem;
+      margin-top: 1rem;
       font-size: 11px;
       color: var(--text-muted);
-      text-align: center;
       font-family: var(--font-mono);
     }
 
@@ -264,11 +245,12 @@
 </head>
 <body>
 
-<div class="card">
-  <div class="card-header">
-    <p class="eyebrow">Vehicle lookup</p>
-    <h1 class="card-title">Select your vehicle</h1>
-  </div>
+<!--
+  OPTIMIZATION 3 (continued): Removed the .card wrapper with its border,
+  shadow, padding, and max-width constraint. The widget now fills the
+  iframe naturally without looking like a floating card inside a form.
+-->
+<div class="widget-wrap">
 
   <!-- Make -->
   <div class="field">
@@ -329,8 +311,11 @@
     </div>
   </div>
 
-  <!-- Hidden field for JotForm integration -->
-  <input type="hidden" id="jotform-vehicle-value" name="vehicle" value="" />
+  <!--
+    OPTIMIZATION 4: Removed the hidden <input> field.
+    JotForm captures the value directly via JFCustomWidget.sendData()
+    so a redundant hidden input is no longer needed.
+  -->
 
   <p class="footer-note">
     Data sourced from the <a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vPIC API</a>
@@ -348,7 +333,15 @@
   const yearHint    = document.getElementById('year-hint');
   const resultBlock = document.getElementById('result-block');
   const resultText  = document.getElementById('result-text');
-  const hiddenField = document.getElementById('jotform-vehicle-value');
+
+  /*
+    OPTIMIZATION 1 (continued): Wait for JotForm's Widget API to be ready
+    before doing anything. JFCustomWidget.subscribe('ready') is the official
+    hook — it fires once JotForm has set up the iframe communication channel.
+  */
+  JFCustomWidget.subscribe('ready', function() {
+    loadMakes();
+  });
 
   function setBadge(n, state) {
     const b = document.getElementById('badge-' + n);
@@ -467,31 +460,30 @@
       document.getElementById('tag-make').textContent  = makeName;
       document.getElementById('tag-model').textContent = modelVal;
       document.getElementById('tag-year').textContent  = yearVal;
-      hiddenField.value = vehicle;
       resultBlock.classList.add('visible');
       setBadge(3, 'done');
 
-      /* JotForm postMessage integration — passes combined vehicle string to one field */
-      if (window.parent !== window) {
-        // Sends the combined value (e.g. "2021 Toyota Camry") to the widget field
-        window.parent.postMessage(JSON.stringify({
-          type: 'widgetEvent',
-          value: vehicle,
-          valid: true
-        }), '*');
+      /*
+        OPTIMIZATION 2: Replace raw window.parent.postMessage() with
+        JFCustomWidget.sendData(). This is the correct JotForm Widget API
+        call — it sends the value to JotForm in the exact format it expects,
+        so the submission captures the vehicle string properly.
+        The 'valid: true' flag tells JotForm the field has a valid value
+        and clears any required-field validation errors.
+      */
+      JFCustomWidget.sendData({
+        value: vehicle,
+        valid: true
+      });
 
-        // Also sets a single JotForm text field with the combined value.
-        // Replace 'vehicleSelection' with the Unique Name of your JotForm field:
-        // click the field → Properties → Advanced → Unique Name
-        window.parent.postMessage(JSON.stringify({
-          type: 'setFieldValue',
-          fieldName: 'vehicleSelection',  // <- replace with your JotForm field name
-          value: vehicle
-        }), '*');
-      }
     } else {
       resultBlock.classList.remove('visible');
-      hiddenField.value = '';
+
+      // Tell JotForm the field is empty/invalid when selection is incomplete
+      JFCustomWidget.sendData({
+        value: '',
+        valid: false
+      });
     }
   }
 
@@ -509,18 +501,18 @@
   }
 
   function resetForm() {
-    makeSelect.value  = '';
+    makeSelect.value = '';
     modelSelect.innerHTML = '<option value="">Select a make first</option>';
     modelSelect.disabled  = true;
     yearSelect.innerHTML  = '<option value="">Select a model first</option>';
     yearSelect.disabled   = true;
     modelHint.textContent = '';
     yearHint.textContent  = '';
-    hiddenField.value     = '';
     resultBlock.classList.remove('visible');
     setBadge(1, 'active');
     setBadge(2, '');
     setBadge(3, '');
+    JFCustomWidget.sendData({ value: '', valid: false });
   }
 
   makeSelect.addEventListener('change', function () {
@@ -550,12 +542,10 @@
     modelHint.textContent = '';
     yearHint.textContent  = '';
     resultBlock.classList.remove('visible');
-    hiddenField.value     = '';
     setBadge(2, '');
     setBadge(3, '');
+    JFCustomWidget.sendData({ value: '', valid: false });
   }
-
-  loadMakes();
 </script>
 </body>
 </html>
