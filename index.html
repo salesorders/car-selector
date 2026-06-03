@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Selector</title>
 
+  <!-- Official JotForm Widget API - the only script needed -->
+  <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -29,12 +32,6 @@
       --font-mono: 'DM Mono', monospace;
     }
 
-    /*
-      OPTIMIZATION 3: Remove centered card layout and min-height: 100vh.
-      Inside JotForm's iframe the widget must be flush and compact —
-      no centering, no full-height body, no card border/shadow.
-      This prevents unwanted scrollbars and wasted whitespace in the form.
-    */
     body {
       font-family: var(--font);
       background: transparent;
@@ -42,14 +39,9 @@
       padding: 0.5rem 0;
     }
 
-    .widget-wrap {
-      width: 100%;
-      max-width: 100%;
-    }
+    .widget-wrap { width: 100%; }
 
-    .field {
-      margin-bottom: 1rem;
-    }
+    .field { margin-bottom: 1rem; }
 
     label {
       display: flex;
@@ -234,14 +226,8 @@
 </head>
 <body>
 
-<!--
-  OPTIMIZATION 3 (continued): Removed the .card wrapper with its border,
-  shadow, padding, and max-width constraint. The widget now fills the
-  iframe naturally without looking like a floating card inside a form.
--->
 <div class="widget-wrap">
 
-  <!-- Make -->
   <div class="field">
     <label for="make-select">
       <span class="step-badge active" id="badge-1">1</span>
@@ -253,7 +239,6 @@
     <p class="hint loading" id="make-hint">Fetching from NHTSA database</p>
   </div>
 
-  <!-- Model -->
   <div class="field">
     <label for="model-select">
       <span class="step-badge" id="badge-2">2</span>
@@ -265,7 +250,6 @@
     <p class="hint" id="model-hint"></p>
   </div>
 
-  <!-- Year -->
   <div class="field">
     <label for="year-select">
       <span class="step-badge" id="badge-3">3</span>
@@ -279,7 +263,6 @@
 
   <hr class="divider" />
 
-  <!-- Result -->
   <div class="result-block" id="result-block" role="status" aria-live="polite">
     <p class="result-label">Selected vehicle</p>
     <p class="result-value" id="result-text">—</p>
@@ -300,12 +283,6 @@
     </div>
   </div>
 
-  <!--
-    OPTIMIZATION 4: Removed the hidden <input> field.
-    JotForm captures the value directly via JFCustomWidget.sendData()
-    so a redundant hidden input is no longer needed.
-  -->
-
   <p class="footer-note">
     Data sourced from the <a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vPIC API</a>
   </p>
@@ -313,19 +290,6 @@
 
 <script>
   const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles';
-
-  // Sends the selected vehicle value to JotForm via postMessage.
-  // Works with JotForm's Widget Builder without needing CDN scripts.
-  function sendToJotForm(value, valid) {
-    if (window.parent !== window) {
-      window.parent.postMessage(JSON.stringify({
-        type    : 'widgetEvent',
-        action  : 'submit',
-        value   : value,
-        valid   : valid
-      }), '*');
-    }
-  }
 
   const makeSelect  = document.getElementById('make-select');
   const modelSelect = document.getElementById('model-select');
@@ -336,15 +300,33 @@
   const resultBlock = document.getElementById('result-block');
   const resultText  = document.getElementById('result-text');
 
-  // Always load makes immediately — works both standalone and inside JotForm
-  loadMakes();
+  let currentValue = '';
 
-  // Listen for JotForm's ready ping (JotForm sends this when the iframe loads)
-  window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'getWidgetValue') {
-      sendToJotForm(lastVehicleValue, !!lastVehicleValue);
+  // ─── JotForm Widget API wiring ───────────────────────────────────────────
+  // subscribe("ready") fires when JotForm has loaded the widget iframe.
+  // All widget code must live inside this callback per JotForm's docs.
+  // When running standalone (GitHub Pages preview), JFCustomWidget still
+  // exists from the script but "ready" fires immediately, so loadMakes()
+  // always runs either way.
+  JFCustomWidget.subscribe("ready", function() {
+    // If editing a submission, pre-populate with the saved value
+    var existingValue = JFCustomWidget.getValue();
+    if (existingValue) {
+      currentValue = existingValue;
     }
+    loadMakes();
   });
+
+  // subscribe("submit") fires when the user clicks Submit on the JotForm.
+  // sendSubmit() passes the value back to JotForm for the submission record.
+  // valid:true allows the field to pass required-field validation.
+  JFCustomWidget.subscribe("submit", function() {
+    JFCustomWidget.sendSubmit({
+      valid: !!currentValue,
+      value: currentValue
+    });
+  });
+  // ─────────────────────────────────────────────────────────────────────────
 
   function setBadge(n, state) {
     const b = document.getElementById('badge-' + n);
@@ -352,8 +334,6 @@
     if (state === 'done') b.innerHTML = '&#10003;';
     else b.textContent = n;
   }
-
-  let lastVehicleValue = '';
 
   const POPULAR_MAKES = [
     'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
@@ -461,6 +441,7 @@
 
     if (makeName && makeName !== '— Select make —' && modelVal && yearVal) {
       const vehicle = yearVal + ' ' + makeName + ' ' + modelVal;
+      currentValue = vehicle;
       resultText.textContent = vehicle;
       document.getElementById('tag-make').textContent  = makeName;
       document.getElementById('tag-model').textContent = modelVal;
@@ -468,19 +449,14 @@
       resultBlock.classList.add('visible');
       setBadge(3, 'done');
 
-      /*
-        sendToJotForm() fires here with the completed vehicle string.
-        valid: true tells JotForm the field has a value and clears any
-        required-field validation errors on the parent form.
-      */
-      lastVehicleValue = vehicle;
-      sendToJotForm(vehicle, true);
+      // sendData updates the field value live as the user selects,
+      // before they even hit Submit — useful for multi-page forms
+      JFCustomWidget.sendData({ value: vehicle });
 
     } else {
+      currentValue = '';
       resultBlock.classList.remove('visible');
-
-      lastVehicleValue = '';
-      sendToJotForm('', false);
+      JFCustomWidget.sendData({ value: '' });
     }
   }
 
@@ -505,11 +481,12 @@
     yearSelect.disabled   = true;
     modelHint.textContent = '';
     yearHint.textContent  = '';
+    currentValue = '';
     resultBlock.classList.remove('visible');
     setBadge(1, 'active');
     setBadge(2, '');
     setBadge(3, '');
-    lastVehicleValue = ''; sendToJotForm('', false);
+    JFCustomWidget.sendData({ value: '' });
   }
 
   makeSelect.addEventListener('change', function () {
@@ -538,10 +515,10 @@
     yearSelect.disabled   = true;
     modelHint.textContent = '';
     yearHint.textContent  = '';
+    currentValue = '';
     resultBlock.classList.remove('visible');
     setBadge(2, '');
     setBadge(3, '');
-    lastVehicleValue = ''; sendToJotForm('', false);
   }
 </script>
 </body>
