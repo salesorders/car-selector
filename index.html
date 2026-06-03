@@ -129,6 +129,13 @@ const resultText  = document.getElementById('result-text');
 let currentValue = '';
 const insideJotForm = (window.self !== window.top);
 
+// Set iframe height immediately — before anything renders.
+// This must happen as early as possible so JotForm expands the iframe
+// before the user tries to interact with any dropdown.
+if (insideJotForm) {
+  JFCustomWidget.requestFrameResize({ height: 600 });
+}
+
 function init() {
   makes.forEach(make => {
     const o = document.createElement('option');
@@ -137,14 +144,6 @@ function init() {
   });
   makeHint.textContent = makes.length + ' makes available';
   setBadge(1, 'active');
-
-  // Tell JotForm how tall the widget is so the iframe resizes to fit.
-  // Without this the iframe stays at its default height and clips the dropdowns.
-  if (insideJotForm) {
-    JFCustomWidget.requestFrameResize({
-      height: document.body.scrollHeight + 20
-    });
-  }
 }
 
 if (insideJotForm) {
