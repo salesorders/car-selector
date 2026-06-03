@@ -308,24 +308,28 @@
   // When running standalone (GitHub Pages preview), JFCustomWidget still
   // exists from the script but "ready" fires immediately, so loadMakes()
   // always runs either way.
-  JFCustomWidget.subscribe("ready", function() {
-    // If editing a submission, pre-populate with the saved value
-    var existingValue = JFCustomWidget.getValue();
-    if (existingValue) {
-      currentValue = existingValue;
-    }
-    loadMakes();
-  });
+  // Detect whether we are running inside JotForm's iframe or standalone
+  var insideJotForm = (window.self !== window.top);
 
-  // subscribe("submit") fires when the user clicks Submit on the JotForm.
-  // sendSubmit() passes the value back to JotForm for the submission record.
-  // valid:true allows the field to pass required-field validation.
-  JFCustomWidget.subscribe("submit", function() {
-    JFCustomWidget.sendSubmit({
-      valid: !!currentValue,
-      value: currentValue
+  if (insideJotForm) {
+    // Inside JotForm: wait for the ready event before doing anything
+    JFCustomWidget.subscribe("ready", function() {
+      var existingValue = JFCustomWidget.getValue();
+      if (existingValue) currentValue = existingValue;
+      loadMakes();
     });
-  });
+
+    // Pass value to JotForm on form submit
+    JFCustomWidget.subscribe("submit", function() {
+      JFCustomWidget.sendSubmit({
+        valid: !!currentValue,
+        value: currentValue
+      });
+    });
+  } else {
+    // Standalone (GitHub Pages preview): just load immediately
+    loadMakes();
+  }
   // ─────────────────────────────────────────────────────────────────────────
 
   function setBadge(n, state) {
@@ -451,12 +455,12 @@
 
       // sendData updates the field value live as the user selects,
       // before they even hit Submit — useful for multi-page forms
-      JFCustomWidget.sendData({ value: vehicle });
+      if (insideJotForm) JFCustomWidget.sendData({ value: vehicle });
 
     } else {
       currentValue = '';
       resultBlock.classList.remove('visible');
-      JFCustomWidget.sendData({ value: '' });
+      if (insideJotForm) JFCustomWidget.sendData({ value: '' });
     }
   }
 
@@ -486,7 +490,7 @@
     setBadge(1, 'active');
     setBadge(2, '');
     setBadge(3, '');
-    JFCustomWidget.sendData({ value: '' });
+    if (insideJotForm) JFCustomWidget.sendData({ value: '' });
   }
 
   makeSelect.addEventListener('change', function () {
