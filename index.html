@@ -335,13 +335,19 @@
   const resultText  = document.getElementById('result-text');
 
   /*
-    OPTIMIZATION 1 (continued): Wait for JotForm's Widget API to be ready
-    before doing anything. JFCustomWidget.subscribe('ready') is the official
-    hook — it fires once JotForm has set up the iframe communication channel.
+    Always start loading makes immediately on page load.
+    If running inside JotForm, also hook into JFCustomWidget.subscribe('ready')
+    for any JotForm-specific setup. This way the dropdowns load whether the
+    page is opened directly (GitHub Pages) or embedded inside JotForm.
   */
-  JFCustomWidget.subscribe('ready', function() {
+  if (typeof JFCustomWidget !== 'undefined') {
+    JFCustomWidget.subscribe('ready', function() {
+      loadMakes();
+    });
+  } else {
+    // Running outside JotForm (e.g. direct browser / GitHub Pages preview)
     loadMakes();
-  });
+  }
 
   function setBadge(n, state) {
     const b = document.getElementById('badge-' + n);
@@ -471,19 +477,16 @@
         The 'valid: true' flag tells JotForm the field has a valid value
         and clears any required-field validation errors.
       */
-      JFCustomWidget.sendData({
-        value: vehicle,
-        valid: true
-      });
+      if (typeof JFCustomWidget !== 'undefined') {
+        JFCustomWidget.sendData({ value: vehicle, valid: true });
+      }
 
     } else {
       resultBlock.classList.remove('visible');
 
-      // Tell JotForm the field is empty/invalid when selection is incomplete
-      JFCustomWidget.sendData({
-        value: '',
-        valid: false
-      });
+      if (typeof JFCustomWidget !== 'undefined') {
+        if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
+      }
     }
   }
 
@@ -512,7 +515,7 @@
     setBadge(1, 'active');
     setBadge(2, '');
     setBadge(3, '');
-    JFCustomWidget.sendData({ value: '', valid: false });
+    if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
   }
 
   makeSelect.addEventListener('change', function () {
@@ -544,7 +547,7 @@
     resultBlock.classList.remove('visible');
     setBadge(2, '');
     setBadge(3, '');
-    JFCustomWidget.sendData({ value: '', valid: false });
+    if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
   }
 </script>
 </body>
