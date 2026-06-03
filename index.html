@@ -4,265 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Selector</title>
-
-  <!-- Official JotForm Widget API - the only script needed -->
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #F5F4F0;
-      --surface: #FFFFFF;
-      --border: #E0DDD6;
-      --border-focus: #2C2C2A;
-      --text-primary: #1A1A18;
-      --text-secondary: #6B6A65;
-      --text-muted: #A09E99;
-      --accent: #1A1A18;
-      --accent-fg: #F5F4F0;
-      --success-bg: #EAF3DE;
-      --success-text: #27500A;
-      --radius: 10px;
-      --font: 'DM Sans', sans-serif;
-      --font-mono: 'DM Mono', monospace;
+      --bg: #F5F4F0; --surface: #FFFFFF; --border: #E0DDD6;
+      --border-focus: #2C2C2A; --text-primary: #1A1A18;
+      --text-secondary: #6B6A65; --text-muted: #A09E99;
+      --accent: #1A1A18; --accent-fg: #F5F4F0;
+      --success-bg: #EAF3DE; --success-text: #27500A;
+      --radius: 10px; --font: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
     }
-
-    body {
-      font-family: var(--font);
-      background: transparent;
-      color: var(--text-primary);
-      padding: 0.5rem 0;
-    }
-
+    body { font-family: var(--font); background: transparent; color: var(--text-primary); padding: 0.5rem 0; }
     .widget-wrap { width: 100%; }
-
     .field { margin-bottom: 1rem; }
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .step-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      background: var(--border);
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-      transition: background 0.2s, color 0.2s;
-    }
-
+    label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--border); border-radius: 50%; font-size: 10px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; transition: background 0.2s, color 0.2s; }
     .step-badge.active { background: var(--accent); color: var(--accent-fg); }
     .step-badge.done   { background: #639922; color: #fff; }
-
-    select {
-      width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.65rem 2.5rem 0.65rem 0.9rem;
-      font-family: var(--font);
-      font-size: 15px;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A09E99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-    }
-
-    select:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
-    }
-
+    select { width: 100%; appearance: none; -webkit-appearance: none; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.65rem 2.5rem 0.65rem 0.9rem; font-family: var(--font); font-size: 15px; color: var(--text-primary); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A09E99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; }
+    select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(26,26,24,0.08); }
     select:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 5px;
-      min-height: 16px;
-      font-family: var(--font-mono);
-    }
-
-    .hint.loading::after {
-      content: '';
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border: 1.5px solid var(--text-muted);
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-left: 6px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 1.25rem 0 1rem;
-    }
-
-    .result-block {
-      background: var(--success-bg);
-      border-radius: var(--radius);
-      padding: 1rem 1.1rem;
-      display: none;
-      animation: fadeUp 0.2s ease;
-    }
-
+    .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; min-height: 16px; font-family: var(--font-mono); }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0 1rem; }
+    .result-block { background: var(--success-bg); border-radius: var(--radius); padding: 1rem 1.1rem; display: none; animation: fadeUp 0.2s ease; }
     .result-block.visible { display: block; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--success-text);
-      opacity: 0.7;
-      margin-bottom: 4px;
-    }
-
-    .result-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--success-text);
-    }
-
-    .tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .tag {
-      display: inline-block;
-      background: rgba(99,153,34,0.15);
-      color: var(--success-text);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-family: var(--font-mono);
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      background: var(--surface);
-      color: var(--text-primary);
-    }
-
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--success-text); opacity: 0.7; margin-bottom: 4px; }
+    .result-value { font-size: 18px; font-weight: 600; color: var(--success-text); }
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .tag { display: inline-block; background: rgba(99,153,34,0.15); color: var(--success-text); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); }
+    .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: background 0.15s, transform 0.1s; background: var(--surface); color: var(--text-primary); }
     .btn:hover { background: var(--bg); }
     .btn:active { transform: scale(0.97); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
-
+    .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
     .btn-primary:hover { background: #333330; }
-
-    .footer-note {
-      margin-top: 1rem;
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
-
-    .footer-note a {
-      color: var(--text-secondary);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
+    .footer-note { margin-top: 1rem; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
   </style>
 </head>
 <body>
-
 <div class="widget-wrap">
-
   <div class="field">
-    <label for="make-select">
-      <span class="step-badge active" id="badge-1">1</span>
-      Make
-    </label>
-    <select id="make-select" aria-label="Vehicle make">
-      <option value="">Loading makes…</option>
-    </select>
-    <p class="hint loading" id="make-hint">Fetching from NHTSA database</p>
+    <label for="make-select"><span class="step-badge active" id="badge-1">1</span> Make</label>
+    <select id="make-select" aria-label="Vehicle make"><option value="">— Select make —</option></select>
+    <p class="hint" id="make-hint"></p>
   </div>
-
   <div class="field">
-    <label for="model-select">
-      <span class="step-badge" id="badge-2">2</span>
-      Model
-    </label>
-    <select id="model-select" disabled aria-label="Vehicle model">
-      <option value="">Select a make first</option>
-    </select>
+    <label for="model-select"><span class="step-badge" id="badge-2">2</span> Model</label>
+    <select id="model-select" disabled aria-label="Vehicle model"><option value="">Select a make first</option></select>
     <p class="hint" id="model-hint"></p>
   </div>
-
   <div class="field">
-    <label for="year-select">
-      <span class="step-badge" id="badge-3">3</span>
-      Year
-    </label>
-    <select id="year-select" disabled aria-label="Vehicle year">
-      <option value="">Select a model first</option>
-    </select>
+    <label for="year-select"><span class="step-badge" id="badge-3">3</span> Year</label>
+    <select id="year-select" disabled aria-label="Vehicle year"><option value="">Select a model first</option></select>
     <p class="hint" id="year-hint"></p>
   </div>
-
   <hr class="divider" />
-
   <div class="result-block" id="result-block" role="status" aria-live="polite">
     <p class="result-label">Selected vehicle</p>
     <p class="result-value" id="result-text">—</p>
@@ -273,257 +74,183 @@
     </div>
     <div class="actions">
       <button class="btn btn-primary" onclick="copyResult()" id="copy-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy
       </button>
       <button class="btn" onclick="resetForm()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.15"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.15"/></svg>
         Reset
       </button>
     </div>
   </div>
-
-  <p class="footer-note">
-    Data sourced from the <a href="https://vpic.nhtsa.dot.gov/api/" target="_blank" rel="noopener">NHTSA vPIC API</a>
-  </p>
 </div>
 
 <script>
-  const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles';
+const VEHICLE_DATA = {
+  'Acura': ['CL','CSX','EL','ILX','Integra','Legend','MDX','NSX','RDX','RL','RLX','RSX','SLX','TL','TLX','TSX','Vigor','ZDX'],
+  'Audi': ['100','200','4000','5000','80','90','A3','A4','A4 allroad','A5','A6','A6 allroad','A7','A8','allroad','Cabriolet','e-tron','e-tron GT','e-tron S','e-tron Sportback','Q3','Q4 e-tron','Q5','Q5 e-tron','Q7','Q8','Q8 e-tron','R8','RS 3','RS 4','RS 5','RS 6','RS 7','RS e-tron GT','RS Q8','S3','S4','S5','S6','S7','S8','SQ5','SQ7','SQ8','TT','TT RS','TTS','V8'],
+  'BMW': ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','ActiveHybrid 3','ActiveHybrid 5','ActiveHybrid 7','i3','i4','i5','i7','i8','iX','iX1','iX3','L7','M2','M3','M4','M5','M6','M8','X1','X2','X3','X3 M','X4','X4 M','X5','X5 M','X6','X6 M','X7','XM','Z3','Z4','Z8'],
+  'Buick': ['Cascada','Century','Electra','Enclave','Encore','Encore GX','Envision','Envista','LaCrosse','LeSabre','Lucerne','Park Avenue','Rainier','Regal','Regal TourX','Rendezvous','Riviera','Skylark','Terraza','Verano'],
+  'Cadillac': ['ATS','ATS-V','BLS','CT4','CT4-V','CT5','CT5-V','CTS','CTS-V','DeVille','DTS','Eldorado','Escalade','Escalade ESV','Escalade EXT','Fleetwood','Lyriq','Optiq','SRX','STS','STS-V','XLR','XT4','XT5','XT6'],
+  'Chevrolet': ['Astro','Avalanche','Aveo','Beretta','Blazer','Blazer EV','Bolt EUV','Bolt EV','Camaro','Caprice','Captiva','City Express','Classic','Cobalt','Colorado','Corsica','Corvette','Cruze','Equinox','Equinox EV','Express','HHR','Impala','Lumina','Malibu','Metro','Monte Carlo','Prizm','S10','Silverado 1500','Silverado 1500 HD','Silverado 2500','Silverado 2500 HD','Silverado 3500','Silverado 3500 HD','Silverado EV','Sonic','Spark','SSR','Suburban','Tahoe','Tracker','Trailblazer','Traverse','Trax','Uplander','Venture'],
+  'Chrysler': ['200','300','300C','300M','Aspen','Cirrus','Concorde','Crossfire','Grand Voyager','LHS','Pacifica','Pacifica Hybrid','PT Cruiser','Sebring','Town & Country','Voyager'],
+  'Dodge': ['Avenger','Caliber','Challenger','Charger','Dakota','Dart','Durango','Grand Caravan','Hornet','Intrepid','Journey','Magnum','Neon','Nitro','Ram 1500','Ram 2500','Ram 3500','Sprinter','Stratus','Viper'],
+  'Ford': ['Aspire','Bronco','Bronco Sport','C-Max','Contour','Crown Victoria','E-150','E-250','E-350','E-450','E-Series','E-Transit','Edge','Escape','Escort','Excursion','Expedition','Explorer','Explorer Sport Trac','F-150','F-150 Lightning','F-250','F-350','F-450','F-550','Five Hundred','Flex','Focus','Freestar','Freestyle','Fusion','Galaxy','GT','Maverick','Mustang','Mustang Mach-E','Probe','Ranger','Taurus','Taurus X','Thunderbird','Transit','Transit Connect','Windstar'],
+  'GMC': ['Acadia','Canyon','Envoy','Envoy XL','Envoy XUV','Envoy XUV','Jimmy','Safari','Savana','Sierra 1500','Sierra 1500 HD','Sierra 2500','Sierra 2500 HD','Sierra 3500','Sierra 3500 HD','Sierra EV','Sonoma','Suburban','Syclone','Terrain','Typhoon','Vandura','Yukon','Yukon XL'],
+  'Honda': ['Accord','Accord Crosstour','Civic','Clarity','CR-V','CR-V Hybrid','CR-Z','Crosstour','del Sol','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Prelude','Prologue','Ridgeline','S2000'],
+  'Hyundai': ['Accent','Azera','Elantra','Elantra GT','Elantra N','Entourage','Equus','Excel','Genesis','Genesis Coupe','Ioniq','IONIQ 5','IONIQ 5 N','IONIQ 6','Kona','Kona Electric','Kona N','Nexo','Palisade','Santa Cruz','Santa Fe','Santa Fe Sport','Santa Fe XL','Scoupe','Sonata','Sonata Hybrid','Tiburon','Tucson','Tucson Plug-in Hybrid','Veracruz','Venue','Veloster','Veloster N','XG300','XG350'],
+  'Infiniti': ['EX35','EX37','FX35','FX37','FX45','FX50','G20','G25','G35','G37','I30','I35','J30','JX35','M30','M35','M37','M45','M56','Q30','Q40','Q45','Q50','Q60','Q70','QX4','QX30','QX50','QX55','QX56','QX60','QX70','QX80'],
+  'Jeep': ['Cherokee','CJ','Commander','Compass','Gladiator','Grand Cherokee','Grand Cherokee L','Grand Wagoneer','Liberty','Patriot','Renegade','Scrambler','Wagoneer','Wrangler','Wrangler Unlimited'],
+  'Kia': ['Amanti','Borrego','Cadenza','Carnival','EV6','EV9','Forte','Forte Koup','K5','K900','Niro','Niro EV','Niro Plug-in Hybrid','Optima','Rio','Rondo','Sedona','Seltos','Sorento','Soul','Soul EV','Spectra','Sportage','Stinger','Stonic','Telluride'],
+  'Lexus': ['CT','ES','GS','GS F','GX','HS','IS','IS F','LC','LS','LX','NX','NX Plug-in Hybrid','RC','RC F','RX','RX L','RX Plug-in Hybrid','RZ','SC','TX','UX','UX 300e'],
+  'Lincoln': ['Aviator','Blackwood','Continental','Corsair','LS','Mark LT','Mark VII','Mark VIII','MKC','MKS','MKT','MKX','MKZ','Navigator','Nautilus','Town Car','Zephyr'],
+  'Mazda': ['323','626','929','B-Series','CX-3','CX-30','CX-5','CX-50','CX-60','CX-70','CX-7','CX-9','CX-90','GLC','Mazda2','Mazda3','Mazda5','Mazda6','Millenia','MPV','MX-30','MX-5 Miata','MX-6','Navajo','Protege','Protege5','RX-7','RX-8','Tribute'],
+  'Mercedes-Benz': ['A-Class','AMG GT','B-Class','C-Class','CL-Class','CLA','CLK-Class','CLS','E-Class','EQB','EQE','EQE SUV','EQS','EQS SUV','G-Class','GL-Class','GLA','GLB','GLC','GLE','GLK-Class','GLS','Maybach GLS','Maybach S-Class','ML-Class','R-Class','S-Class','SL-Class','SLK-Class','SLR McLaren','SLS AMG','Sprinter','Vito'],
+  'Mitsubishi': ['3000GT','Diamante','Eclipse','Eclipse Cross','Endeavor','Expo','Galant','Lancer','Lancer Evolution','Mighty Max','Mirage','Mirage G4','Montero','Montero Sport','Outlander','Outlander PHEV','Outlander Sport','Precis','Raider','Sigma','Starion','Van'],
+  'Nissan': ['200SX','240SX','300ZX','350Z','370Z','Altima','Armada','Ariya','Axxess','Cube','Frontier','GT-R','Juke','Kicks','Leaf','Maxima','Murano','Murano CrossCabriolet','NV','NV200','NX','Pathfinder','Pickup','Pulsar','Quest','Rogue','Rogue Select','Rogue Sport','Sentra','Stanza','Titan','Titan XD','Xterra','Versa','Versa Note','Z'],
+  'Ram': ['1500','1500 Classic','2500','3500','4500','5500','C/V','Dakota','ProMaster','ProMaster City','ProMaster Window Van'],
+  'Subaru': ['Ascent','B9 Tribeca','Baja','BRZ','Crosstrek','Crosstrek Hybrid','Forester','Impreza','Justy','Legacy','Loyale','Outback','Solterra','SVX','Tribeca','WRX','WRX STI','XV Crosstrek'],
+  'Tesla': ['Cybertruck','Model 3','Model S','Model X','Model Y','Roadster'],
+  'Toyota': ['4Runner','Avalon','Avalon Hybrid','bZ4X','Camry','Camry Hybrid','Camry Solara','Celica','Corolla','Corolla Cross','Corolla Hybrid','Corolla iM','Corona','Cressida','Crown','Echo','FJ Cruiser','GR86','GR Corolla','GR Supra','Highlander','Highlander Hybrid','Land Cruiser','Matrix','MR2','Paseo','Pickup','Previa','Prius','Prius C','Prius Prime','Prius V','RAV4','RAV4 EV','RAV4 Hybrid','RAV4 Prime','Sequoia','Sienna','Supra','T100','Tacoma','Tercel','Tundra','Venza','Yaris','Yaris iA'],
+  'Volkswagen': ['Arteon','Atlas','Atlas Cross Sport','Beetle','Cabrio','Cabriolet','CC','Corrado','EuroVan','Fox','Golf','Golf Alltrack','Golf GTI','Golf R','Golf SportWagen','ID.3','ID.4','ID.4 GTX','ID.Buzz','Jetta','Jetta GLI','Jetta SportWagen','Passat','Phaeton','Quantum','Rabbit','Routan','Scirocco','Taos','Tiguan','Touareg','Touareg 2'],
+  'Volvo': ['240','740','760','780','850','940','960','C30','C40','C70','EX30','EX40','EX90','S40','S60','S70','S80','S90','V40','V50','V60','V70','V90','XC40','XC40 Recharge','XC60','XC70','XC90']
+};
 
-  const makeSelect  = document.getElementById('make-select');
-  const modelSelect = document.getElementById('model-select');
-  const yearSelect  = document.getElementById('year-select');
-  const makeHint    = document.getElementById('make-hint');
-  const modelHint   = document.getElementById('model-hint');
-  const yearHint    = document.getElementById('year-hint');
-  const resultBlock = document.getElementById('result-block');
-  const resultText  = document.getElementById('result-text');
+const makes = Object.keys(VEHICLE_DATA).sort();
+const makeSelect  = document.getElementById('make-select');
+const modelSelect = document.getElementById('model-select');
+const yearSelect  = document.getElementById('year-select');
+const makeHint    = document.getElementById('make-hint');
+const modelHint   = document.getElementById('model-hint');
+const yearHint    = document.getElementById('year-hint');
+const resultBlock = document.getElementById('result-block');
+const resultText  = document.getElementById('result-text');
 
-  let currentValue = '';
+let currentValue = '';
+const insideJotForm = (window.self !== window.top);
 
-  // ─── JotForm Widget API wiring ───────────────────────────────────────────
-  // subscribe("ready") fires when JotForm has loaded the widget iframe.
-  // All widget code must live inside this callback per JotForm's docs.
-  // When running standalone (GitHub Pages preview), JFCustomWidget still
-  // exists from the script but "ready" fires immediately, so loadMakes()
-  // always runs either way.
-  // Detect whether we are running inside JotForm's iframe or standalone
-  var insideJotForm = (window.self !== window.top);
+function init() {
+  makes.forEach(make => {
+    const o = document.createElement('option');
+    o.value = make; o.textContent = make;
+    makeSelect.appendChild(o);
+  });
+  makeHint.textContent = makes.length + ' makes available';
+  setBadge(1, 'active');
+}
 
-  if (insideJotForm) {
-    // Inside JotForm: wait for the ready event before doing anything
-    JFCustomWidget.subscribe("ready", function() {
-      var existingValue = JFCustomWidget.getValue();
-      if (existingValue) currentValue = existingValue;
-      loadMakes();
-    });
+if (insideJotForm) {
+  JFCustomWidget.subscribe("ready", function() {
+    var existing = JFCustomWidget.getValue();
+    if (existing) currentValue = existing;
+    init();
+  });
+  JFCustomWidget.subscribe("submit", function() {
+    JFCustomWidget.sendSubmit({ valid: !!currentValue, value: currentValue });
+  });
+} else {
+  init();
+}
 
-    // Pass value to JotForm on form submit
-    JFCustomWidget.subscribe("submit", function() {
-      JFCustomWidget.sendSubmit({
-        valid: !!currentValue,
-        value: currentValue
-      });
-    });
-  } else {
-    // Standalone (GitHub Pages preview): just load immediately
-    loadMakes();
-  }
-  // ─────────────────────────────────────────────────────────────────────────
+function setBadge(n, state) {
+  const b = document.getElementById('badge-' + n);
+  b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
+  b.innerHTML = state === 'done' ? '&#10003;' : n;
+}
 
-  function setBadge(n, state) {
-    const b = document.getElementById('badge-' + n);
-    b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
-    if (state === 'done') b.innerHTML = '&#10003;';
-    else b.textContent = n;
-  }
+function sendValue(val) {
+  if (insideJotForm) JFCustomWidget.sendData({ value: val });
+}
 
-  const POPULAR_MAKES = [
-    'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
-    'Ford','GMC','Honda','Hyundai','Infiniti','Jeep','Kia','Lexus','Lincoln',
-    'Mazda','Mercedes-Benz','Mitsubishi','Nissan','Ram','Subaru','Tesla',
-    'Toyota','Volkswagen','Volvo'
-  ];
+makeSelect.addEventListener('change', function() {
+  const make = this.value;
+  modelSelect.innerHTML = '<option value="">— Select model —</option>';
+  yearSelect.innerHTML  = '<option value="">Select a model first</option>';
+  yearSelect.disabled   = true;
+  modelHint.textContent = '';
+  yearHint.textContent  = '';
+  resultBlock.classList.remove('visible');
+  currentValue = ''; sendValue('');
+  setBadge(2, ''); setBadge(3, '');
 
-  let allMakesCache = [];
-  let showingAll = false;
-
-  function populateMakeSelect(makes) {
-    makeSelect.innerHTML = '<option value="">— Select make —</option>';
-    makes.forEach(m => {
+  if (make) {
+    const models = VEHICLE_DATA[make] || [];
+    models.forEach(m => {
       const o = document.createElement('option');
-      o.value = m.Make_ID;
-      o.dataset.name = m.Make_Name;
-      o.textContent = m.Make_Name;
-      makeSelect.appendChild(o);
+      o.value = m; o.textContent = m;
+      modelSelect.appendChild(o);
     });
+    modelSelect.disabled = false;
+    modelHint.textContent = models.length + ' models for ' + make;
+    setBadge(1, 'done'); setBadge(2, 'active');
+  } else {
+    modelSelect.innerHTML = '<option value="">Select a make first</option>';
+    modelSelect.disabled  = true;
+    setBadge(1, 'active');
   }
+});
 
-  async function loadMakes() {
-    makeHint.className = 'hint loading';
-    makeHint.textContent = 'Fetching from NHTSA database';
-    try {
-      const res  = await fetch(`${NHTSA}/GetAllMakes?format=json`);
-      const data = await res.json();
-      allMakesCache = data.Results.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
+modelSelect.addEventListener('change', function() {
+  yearSelect.innerHTML = '<option value="">— Select year —</option>';
+  yearHint.textContent = '';
+  resultBlock.classList.remove('visible');
+  currentValue = ''; sendValue('');
+  setBadge(3, '');
 
-      const popular = allMakesCache.filter(m =>
-        POPULAR_MAKES.some(p => p.toLowerCase() === m.Make_Name.toLowerCase())
-      ).sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
-
-      populateMakeSelect(popular);
-      makeHint.className = 'hint';
-      makeHint.innerHTML = popular.length + ' popular makes shown &mdash; <a href="#" id="toggle-makes" style="color:var(--text-secondary);text-decoration:underline;text-underline-offset:2px;">show all ' + allMakesCache.length.toLocaleString() + '</a>';
-
-      document.getElementById('toggle-makes').addEventListener('click', function(e) {
-        e.preventDefault();
-        showingAll = !showingAll;
-        populateMakeSelect(showingAll ? allMakesCache : popular);
-        this.textContent = showingAll
-          ? 'show popular only'
-          : 'show all ' + allMakesCache.length.toLocaleString();
-        resetBelowMake();
-      });
-    } catch (e) {
-      makeHint.className = 'hint';
-      makeHint.textContent = 'Error loading makes. Check your connection.';
-    }
-  }
-
-  async function loadModels(makeId, makeName) {
-    modelSelect.disabled = true;
-    modelSelect.innerHTML = '<option value="">Loading models…</option>';
-    modelHint.className = 'hint loading';
-    modelHint.textContent = 'Fetching models';
-    yearSelect.disabled = true;
-    yearSelect.innerHTML = '<option value="">Select a model first</option>';
-    yearHint.textContent = '';
-    try {
-      const res  = await fetch(`${NHTSA}/GetModelsForMakeId/${makeId}?format=json`);
-      const data = await res.json();
-      const models = data.Results.sort((a, b) => a.Model_Name.localeCompare(b.Model_Name));
-      modelSelect.innerHTML = '<option value="">— Select model —</option>';
-      models.forEach(m => {
-        const o = document.createElement('option');
-        o.value = m.Model_Name;
-        o.textContent = m.Model_Name;
-        modelSelect.appendChild(o);
-      });
-      modelSelect.disabled = false;
-      modelHint.className = 'hint';
-      modelHint.textContent = models.length + ' models for ' + makeName;
-      setBadge(1, 'done');
-      setBadge(2, 'active');
-    } catch (e) {
-      modelHint.className = 'hint';
-      modelHint.textContent = 'Error loading models.';
-    }
-  }
-
-  function loadYears() {
+  if (this.value) {
     const currentYear = new Date().getFullYear() + 1;
-    yearSelect.innerHTML = '<option value="">— Select year —</option>';
     for (let y = currentYear; y >= 1981; y--) {
       const o = document.createElement('option');
-      o.value = y;
-      o.textContent = y;
+      o.value = y; o.textContent = y;
       yearSelect.appendChild(o);
     }
     yearSelect.disabled = false;
-    yearHint.className = 'hint';
-    yearHint.textContent = (currentYear - 1981 + 1) + ' model years (1981–' + currentYear + ')';
-    setBadge(2, 'done');
-    setBadge(3, 'active');
-  }
-
-  function updateResult() {
-    const makeOpt  = makeSelect.options[makeSelect.selectedIndex];
-    const makeName = makeOpt ? makeOpt.dataset.name || makeOpt.text : '';
-    const modelVal = modelSelect.value;
-    const yearVal  = yearSelect.value;
-
-    if (makeName && makeName !== '— Select make —' && modelVal && yearVal) {
-      const vehicle = yearVal + ' ' + makeName + ' ' + modelVal;
-      currentValue = vehicle;
-      resultText.textContent = vehicle;
-      document.getElementById('tag-make').textContent  = makeName;
-      document.getElementById('tag-model').textContent = modelVal;
-      document.getElementById('tag-year').textContent  = yearVal;
-      resultBlock.classList.add('visible');
-      setBadge(3, 'done');
-
-      // sendData updates the field value live as the user selects,
-      // before they even hit Submit — useful for multi-page forms
-      if (insideJotForm) JFCustomWidget.sendData({ value: vehicle });
-
-    } else {
-      currentValue = '';
-      resultBlock.classList.remove('visible');
-      if (insideJotForm) JFCustomWidget.sendData({ value: '' });
-    }
-  }
-
-  function copyResult() {
-    const text = resultText.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-      setTimeout(() => {
-        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
-      }, 1800);
-    }).catch(() => {
-      alert('Could not copy. Please copy manually: ' + resultText.textContent);
-    });
-  }
-
-  function resetForm() {
-    makeSelect.value = '';
-    modelSelect.innerHTML = '<option value="">Select a make first</option>';
-    modelSelect.disabled  = true;
-    yearSelect.innerHTML  = '<option value="">Select a model first</option>';
-    yearSelect.disabled   = true;
-    modelHint.textContent = '';
-    yearHint.textContent  = '';
-    currentValue = '';
-    resultBlock.classList.remove('visible');
-    setBadge(1, 'active');
-    setBadge(2, '');
-    setBadge(3, '');
-    if (insideJotForm) JFCustomWidget.sendData({ value: '' });
-  }
-
-  makeSelect.addEventListener('change', function () {
-    resetBelowMake();
-    if (this.value) {
-      const name = this.options[this.selectedIndex].dataset.name || this.options[this.selectedIndex].text;
-      loadModels(this.value, name);
-    }
-  });
-
-  modelSelect.addEventListener('change', function () {
+    yearHint.textContent = 'Model years 1981–' + currentYear;
+    setBadge(2, 'done'); setBadge(3, 'active');
+  } else {
     yearSelect.innerHTML = '<option value="">Select a model first</option>';
     yearSelect.disabled  = true;
-    yearHint.textContent = '';
-    resultBlock.classList.remove('visible');
-    if (this.value) loadYears();
-    updateResult();
-  });
-
-  yearSelect.addEventListener('change', updateResult);
-
-  function resetBelowMake() {
-    modelSelect.innerHTML = '<option value="">Select a make first</option>';
-    modelSelect.disabled  = true;
-    yearSelect.innerHTML  = '<option value="">Select a model first</option>';
-    yearSelect.disabled   = true;
-    modelHint.textContent = '';
-    yearHint.textContent  = '';
-    currentValue = '';
-    resultBlock.classList.remove('visible');
-    setBadge(2, '');
-    setBadge(3, '');
   }
+});
+
+yearSelect.addEventListener('change', function() {
+  const make  = makeSelect.value;
+  const model = modelSelect.value;
+  const year  = this.value;
+  if (make && model && year) {
+    const vehicle = year + ' ' + make + ' ' + model;
+    currentValue = vehicle;
+    resultText.textContent = vehicle;
+    document.getElementById('tag-make').textContent  = make;
+    document.getElementById('tag-model').textContent = model;
+    document.getElementById('tag-year').textContent  = year;
+    resultBlock.classList.add('visible');
+    setBadge(3, 'done');
+    sendValue(vehicle);
+  } else {
+    currentValue = ''; resultBlock.classList.remove('visible'); sendValue('');
+  }
+});
+
+function copyResult() {
+  navigator.clipboard.writeText(currentValue).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(() => { btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy'; }, 1800);
+  });
+}
+
+function resetForm() {
+  makeSelect.value = '';
+  modelSelect.innerHTML = '<option value="">Select a make first</option>';
+  modelSelect.disabled  = true;
+  yearSelect.innerHTML  = '<option value="">Select a model first</option>';
+  yearSelect.disabled   = true;
+  modelHint.textContent = ''; yearHint.textContent = '';
+  currentValue = ''; resultBlock.classList.remove('visible');
+  setBadge(1, 'active'); setBadge(2, ''); setBadge(3, '');
+  sendValue('');
+}
 </script>
 </body>
 </html>
