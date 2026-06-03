@@ -5,17 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Selector</title>
 
-  <!--
-    OPTIMIZATION 1: Load JotForm's official Widget API.
-    This gives us the JFCustomWidget object which handles all
-    postMessage communication correctly with the parent form.
-    Without this, JotForm ignores any messages the iframe sends.
-  -->
-  <script src="https://cdn.jotfor.ms/static/prototype.forms.js"></script>
-  <script src="https://cdn.jotfor.ms/static/jotform.forms.js"></script>
-  <script src="https://cdn.jotfor.ms/js/vendor/jquery-1.10.2.min.js"></script>
-  <script src="https://cdn.jotfor.ms/js/widgets.js"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -325,6 +314,19 @@
 <script>
   const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles';
 
+  // Sends the selected vehicle value to JotForm via postMessage.
+  // Works with JotForm's Widget Builder without needing CDN scripts.
+  function sendToJotForm(value, valid) {
+    if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({
+        type    : 'widgetEvent',
+        action  : 'submit',
+        value   : value,
+        valid   : valid
+      }), '*');
+    }
+  }
+
   const makeSelect  = document.getElementById('make-select');
   const modelSelect = document.getElementById('model-select');
   const yearSelect  = document.getElementById('year-select');
@@ -334,20 +336,15 @@
   const resultBlock = document.getElementById('result-block');
   const resultText  = document.getElementById('result-text');
 
-  /*
-    Always start loading makes immediately on page load.
-    If running inside JotForm, also hook into JFCustomWidget.subscribe('ready')
-    for any JotForm-specific setup. This way the dropdowns load whether the
-    page is opened directly (GitHub Pages) or embedded inside JotForm.
-  */
-  if (typeof JFCustomWidget !== 'undefined') {
-    JFCustomWidget.subscribe('ready', function() {
-      loadMakes();
-    });
-  } else {
-    // Running outside JotForm (e.g. direct browser / GitHub Pages preview)
-    loadMakes();
-  }
+  // Always load makes immediately — works both standalone and inside JotForm
+  loadMakes();
+
+  // Listen for JotForm's ready ping (JotForm sends this when the iframe loads)
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'getWidgetValue') {
+      sendToJotForm(lastVehicleValue, !!lastVehicleValue);
+    }
+  });
 
   function setBadge(n, state) {
     const b = document.getElementById('badge-' + n);
@@ -355,6 +352,8 @@
     if (state === 'done') b.innerHTML = '&#10003;';
     else b.textContent = n;
   }
+
+  let lastVehicleValue = '';
 
   const POPULAR_MAKES = [
     'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
@@ -470,23 +469,18 @@
       setBadge(3, 'done');
 
       /*
-        OPTIMIZATION 2: Replace raw window.parent.postMessage() with
-        JFCustomWidget.sendData(). This is the correct JotForm Widget API
-        call — it sends the value to JotForm in the exact format it expects,
-        so the submission captures the vehicle string properly.
-        The 'valid: true' flag tells JotForm the field has a valid value
-        and clears any required-field validation errors.
+        sendToJotForm() fires here with the completed vehicle string.
+        valid: true tells JotForm the field has a value and clears any
+        required-field validation errors on the parent form.
       */
-      if (typeof JFCustomWidget !== 'undefined') {
-        JFCustomWidget.sendData({ value: vehicle, valid: true });
-      }
+      lastVehicleValue = vehicle;
+      sendToJotForm(vehicle, true);
 
     } else {
       resultBlock.classList.remove('visible');
 
-      if (typeof JFCustomWidget !== 'undefined') {
-        if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
-      }
+      lastVehicleValue = '';
+      sendToJotForm('', false);
     }
   }
 
@@ -515,7 +509,7 @@
     setBadge(1, 'active');
     setBadge(2, '');
     setBadge(3, '');
-    if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
+    lastVehicleValue = ''; sendToJotForm('', false);
   }
 
   makeSelect.addEventListener('change', function () {
@@ -547,7 +541,7 @@
     resultBlock.classList.remove('visible');
     setBadge(2, '');
     setBadge(3, '');
-    if (typeof JFCustomWidget !== 'undefined') { JFCustomWidget.sendData({ value: '', valid: false }); }
+    lastVehicleValue = ''; sendToJotForm('', false);
   }
 </script>
 </body>
