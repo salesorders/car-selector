@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Selector</title>
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,14 +21,26 @@
       --radius: 10px; --font: 'DM Sans', sans-serif;
     }
 
+    /* ── Android-specific fixes ── */
+    /* Prevents rubber-band scroll inside the iframe on Android */
+    html { overflow: hidden; height: 100%; }
+    /* Use dvh (dynamic viewport height) where supported, fall back to 100% */
+    body { overflow-y: auto; height: 100%; }
+    /* Prevent text selection flash on long press (Android) */
+    * { -webkit-user-select: none; user-select: none; }
+    /* Re-enable selection for inputs */
+    input, textarea { -webkit-user-select: text; user-select: text; }
+    /* Remove Android tap flash on all interactive elements */
+    * { -webkit-tap-highlight-color: transparent; }
+    /* Prevent font boosting on Android */
+    * { text-size-adjust: none; -webkit-text-size-adjust: none; }
+
     /* ── Base ── */
     html, body { width: 100%; min-height: 100%; }
     body {
       font-family: var(--font); background: var(--surface);
       color: var(--text-primary); padding: 0;
-      -webkit-text-size-adjust: 100%; overflow-x: hidden;
-      /* Needed so position:absolute overlay fills the page */
-      position: relative;
+      overflow-x: hidden; position: relative;
     }
 
     /* ── Layout: no card wrapper, everything is full width ── */
@@ -116,7 +128,7 @@
     }
     .picker-search:focus { outline: none; border-color: var(--border-focus); }
 
-    .picker-options { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+    .picker-options { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; will-change: scroll-position; }
     .picker-option {
       padding: 0 1.25rem; height: 52px; font-size: 16px; cursor: pointer;
       color: var(--text-primary); border-bottom: 1px solid var(--border);
@@ -125,6 +137,7 @@
     }
     .picker-option:last-child { border-bottom: none; }
     .picker-option:active { background: var(--highlight); }
+    .picker-option.pressing { background: var(--highlight); }
     .picker-option.selected { font-weight: 600; }
     .picker-empty { padding: 1.25rem; font-size: 14px; color: var(--text-muted); }
 
@@ -335,19 +348,37 @@ function showResult(vehicle, make, model, year) {
 
 // ── Unified tap (no 300ms delay, works on touch + mouse) ─────────────────
 function tap(el, fn) {
-  let id = null;
+  let startX, startY, fired = false;
+
   el.addEventListener('touchstart', function(e) {
-    id = setTimeout(function() { id = null; }, 500);
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    fired  = false;
+    if (el.classList.contains('picker-option')) el.classList.add('pressing');
   }, { passive: true });
+
+  el.addEventListener('touchmove', function(e) {
+    // Cancel if user is scrolling (moved more than 10px)
+    if (Math.abs(e.touches[0].clientX - startX) > 10 ||
+        Math.abs(e.touches[0].clientY - startY) > 10) {
+      fired = true; // suppress touchend
+      if (el.classList.contains('picker-option')) el.classList.remove('pressing');
+    }
+  }, { passive: true });
+
   el.addEventListener('touchend', function(e) {
-    if (id !== null) {
-      clearTimeout(id); id = null;
+    if (el.classList.contains('picker-option')) el.classList.remove('pressing');
+    if (!fired) {
+      fired = true;
       e.preventDefault();
       fn.call(el, e);
     }
   }, { passive: false });
+
   el.addEventListener('click', function(e) {
-    if (id === null) fn.call(el, e); // only fires if touchend didn't
+    // Fallback for desktop / Android WebView where touch doesn't fire
+    if (!fired) fn.call(el, e);
+    fired = false;
   });
 }
 
