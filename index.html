@@ -54,19 +54,18 @@
     /* ── Modal overlay (shared for all dropdowns) ── */
     .dd-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4); z-index: 1000;
-      align-items: flex-end; /* sheet slides up from bottom */
-      justify-content: center;
+      background: var(--surface); z-index: 1000;
+      flex-direction: column;
     }
     .dd-overlay.open { display: flex; }
 
     .dd-sheet {
-      background: var(--surface); border-radius: 20px 20px 0 0;
-      width: 100%; max-width: 540px;
-      max-height: 75vh; display: flex; flex-direction: column;
-      animation: slideUp 0.25s ease;
+      background: var(--surface);
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      animation: fadeIn 0.15s ease;
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .dd-sheet-header {
       display: flex; align-items: center; justify-content: space-between;
