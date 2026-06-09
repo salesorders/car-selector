@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Vehicle Selector</title>
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,127 +19,132 @@
       --highlight: #E8F0FE;
       --radius: 10px; --font: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
     }
-    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); padding: 2rem 1rem; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2rem 1.75rem; width: 100%; max-width: 480px; margin: 0 auto; }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); padding: 1.5rem 1rem; -webkit-text-size-adjust: 100%; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 480px; margin: 0 auto; }
+
     .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-    .card-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 1.75rem; }
-    .field { margin-bottom: 1.1rem; position: relative; }
+    .card-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem; }
+    .field { margin-bottom: 1rem; }
     label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
-    .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--border); border-radius: 50%; font-size: 10px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; transition: background 0.2s, color 0.2s; }
+
+    .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: var(--border); border-radius: 50%; font-size: 10px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; transition: background 0.2s, color 0.2s; }
     .step-badge.active { background: var(--accent); color: var(--accent-fg); }
     .step-badge.done   { background: #639922; color: #fff; }
+
     .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; min-height: 16px; font-family: var(--font-mono); }
 
-    /* ── Custom dropdown ── */
-    .dd { position: relative; }
+    /* ── Trigger button ── */
     .dd-trigger {
       width: 100%; display: flex; align-items: center; justify-content: space-between;
       background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 0.65rem 0.9rem; font-family: var(--font); font-size: 15px;
-      color: var(--text-primary); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
-      text-align: left; user-select: none;
+      padding: 0.8rem 1rem; font-family: var(--font); font-size: 16px; /* 16px prevents iOS zoom */
+      color: var(--text-primary); cursor: pointer;
+      text-align: left; user-select: none; -webkit-tap-highlight-color: transparent;
+      min-height: 48px; /* minimum touch target */
+      transition: border-color 0.15s;
     }
-    .dd-trigger:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(26,26,24,0.08); }
-    .dd-trigger.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-    .dd-trigger.open { border-color: var(--border-focus); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .dd-trigger:focus { outline: none; border-color: var(--border-focus); }
+    .dd-trigger.disabled { opacity: 0.4; pointer-events: none; }
+    .dd-trigger .placeholder { color: var(--text-muted); }
     .dd-arrow { flex-shrink: 0; transition: transform 0.2s; }
     .dd-trigger.open .dd-arrow { transform: rotate(180deg); }
-    .dd-trigger .placeholder { color: var(--text-muted); }
 
-    .dd-list {
-      display: none; position: relative;
-      background: var(--surface); border: 1px solid var(--border-focus);
-      border-top: none; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);
-      max-height: 220px; overflow-y: auto; z-index: 100;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    /* ── Modal overlay (shared for all dropdowns) ── */
+    .dd-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 1000;
+      align-items: flex-end; /* sheet slides up from bottom */
+      justify-content: center;
     }
-    .dd-list.open { display: block; }
-    .dd-search {
-      padding: 8px 10px; border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; background: var(--surface); z-index: 1;
+    .dd-overlay.open { display: flex; }
+
+    .dd-sheet {
+      background: var(--surface); border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 540px;
+      max-height: 75vh; display: flex; flex-direction: column;
+      animation: slideUp 0.25s ease;
     }
-    .dd-search input {
-      width: 100%; border: 1px solid var(--border); border-radius: 6px;
-      padding: 5px 8px; font-family: var(--font); font-size: 13px;
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .dd-sheet-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .dd-sheet-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .dd-close {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      color: var(--text-muted); font-size: 22px; line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .dd-search-wrap { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .dd-search-wrap input {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.6rem 0.8rem; font-family: var(--font); font-size: 16px; /* prevent iOS zoom */
       color: var(--text-primary); background: var(--bg);
     }
-    .dd-search input:focus { outline: none; border-color: var(--border-focus); }
-    .dd-options { padding: 4px 0; }
+    .dd-search-wrap input:focus { outline: none; border-color: var(--border-focus); }
+
+    .dd-options { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; padding: 6px 0; }
+
     .dd-option {
-      padding: 9px 14px; font-size: 14px; cursor: pointer;
-      color: var(--text-primary); transition: background 0.1s;
+      padding: 14px 1.25rem; font-size: 16px; cursor: pointer;
+      color: var(--text-primary); border-bottom: 1px solid var(--border);
+      -webkit-tap-highlight-color: transparent; user-select: none;
+      display: flex; align-items: center; min-height: 48px;
     }
-    .dd-option:hover { background: var(--highlight); }
+    .dd-option:last-child { border-bottom: none; }
+    .dd-option:active { background: var(--highlight); }
     .dd-option.selected { background: var(--highlight); font-weight: 500; }
-    .dd-option.hidden { display: none; }
-    .dd-empty { padding: 10px 14px; font-size: 13px; color: var(--text-muted); font-family: var(--font-mono); }
+    .dd-empty { padding: 1rem 1.25rem; font-size: 14px; color: var(--text-muted); }
 
     /* ── Result ── */
-    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0 1.25rem; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0 1rem; }
     .result-block { background: var(--success-bg); border-radius: var(--radius); padding: 1rem 1.1rem; display: none; animation: fadeUp 0.2s ease; }
     .result-block.visible { display: block; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--success-text); opacity: 0.7; margin-bottom: 4px; }
-    .result-value { font-size: 18px; font-weight: 600; color: var(--success-text); }
+    .result-value { font-size: 17px; font-weight: 600; color: var(--success-text); }
     .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
     .tag { display: inline-block; background: rgba(99,153,34,0.15); color: var(--success-text); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); }
-    .actions { display: flex; gap: 8px; margin-top: 12px; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: background 0.15s; background: var(--surface); color: var(--text-primary); }
-    .btn:hover { background: var(--bg); }
+    .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--surface); color: var(--text-primary); min-height: 44px; -webkit-tap-highlight-color: transparent; }
     .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-    .btn-primary:hover { background: #333330; }
-    .footer-note { margin-top: 1.5rem; font-size: 11px; color: var(--text-muted); text-align: center; font-family: var(--font-mono); }
+    .footer-note { margin-top: 1.25rem; font-size: 11px; color: var(--text-muted); text-align: center; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
+
 <div class="card">
   <p class="eyebrow">Vehicle lookup</p>
   <h1 class="card-title">Select your vehicle</h1>
 
-  <!-- Make -->
   <div class="field">
     <label><span class="step-badge active" id="badge-1">1</span> Make</label>
-    <div class="dd" id="dd-make">
-      <button class="dd-trigger" id="make-trigger" type="button" aria-haspopup="listbox">
-        <span id="make-label" class="placeholder">— Select make —</span>
-        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="dd-list" id="make-list" role="listbox">
-        <div class="dd-search"><input type="text" id="make-search" placeholder="Search makes…" autocomplete="off" /></div>
-        <div class="dd-options" id="make-options"></div>
-      </div>
-    </div>
+    <button class="dd-trigger" id="make-trigger" type="button">
+      <span id="make-label" class="placeholder">— Select make —</span>
+      <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
     <p class="hint" id="make-hint"></p>
   </div>
 
-  <!-- Model -->
   <div class="field">
     <label><span class="step-badge" id="badge-2">2</span> Model</label>
-    <div class="dd" id="dd-model">
-      <button class="dd-trigger disabled" id="model-trigger" type="button" aria-haspopup="listbox">
-        <span id="model-label" class="placeholder">Select a make first</span>
-        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="dd-list" id="model-list" role="listbox">
-        <div class="dd-search"><input type="text" id="model-search" placeholder="Search models…" autocomplete="off" /></div>
-        <div class="dd-options" id="model-options"></div>
-      </div>
-    </div>
+    <button class="dd-trigger disabled" id="model-trigger" type="button">
+      <span id="model-label" class="placeholder">Select a make first</span>
+      <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
     <p class="hint" id="model-hint"></p>
   </div>
 
-  <!-- Year -->
   <div class="field">
     <label><span class="step-badge" id="badge-3">3</span> Year</label>
-    <div class="dd" id="dd-year">
-      <button class="dd-trigger disabled" id="year-trigger" type="button" aria-haspopup="listbox">
-        <span id="year-label" class="placeholder">Select a model first</span>
-        <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="dd-list" id="year-list" role="listbox">
-        <div class="dd-options" id="year-options"></div>
-      </div>
-    </div>
+    <button class="dd-trigger disabled" id="year-trigger" type="button">
+      <span id="year-label" class="placeholder">Select a model first</span>
+      <svg class="dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A09E99" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
     <p class="hint" id="year-hint"></p>
   </div>
 
@@ -154,11 +159,11 @@
       <span class="tag" id="tag-year"></span>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" onclick="copyResult()" id="copy-btn">
+      <button class="btn btn-primary" id="copy-btn" type="button">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy
       </button>
-      <button class="btn" onclick="resetAll()">
+      <button class="btn" id="reset-btn" type="button">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.15"/></svg>
         Reset
       </button>
@@ -166,6 +171,20 @@
   </div>
 
   <p class="footer-note">27 popular makes · all US market models</p>
+</div>
+
+<!-- Single shared modal sheet for all dropdowns -->
+<div class="dd-overlay" id="dd-overlay">
+  <div class="dd-sheet">
+    <div class="dd-sheet-header">
+      <span class="dd-sheet-title" id="sheet-title">Select</span>
+      <button class="dd-close" id="sheet-close" type="button">&#215;</button>
+    </div>
+    <div class="dd-search-wrap" id="sheet-search-wrap">
+      <input type="search" id="sheet-search" placeholder="Search…" autocomplete="off" autocorrect="off" autocapitalize="off" />
+    </div>
+    <div class="dd-options" id="sheet-options"></div>
+  </div>
 </div>
 
 <script>
@@ -201,23 +220,66 @@ const VEHICLE_DATA = {
 
 const makes = Object.keys(VEHICLE_DATA).sort();
 let selectedMake = '', selectedModel = '', selectedYear = '', currentValue = '';
+let activeDropdown = null; // 'make' | 'model' | 'year'
 const insideJotForm = (window.self !== window.top);
 
+// ── Shared modal sheet ────────────────────────────────────────────────────
+const overlay    = document.getElementById('dd-overlay');
+const sheetTitle = document.getElementById('sheet-title');
+const sheetSearch = document.getElementById('sheet-search');
+const sheetSearchWrap = document.getElementById('sheet-search-wrap');
+const sheetOptions = document.getElementById('sheet-options');
 
-function closeAll() {
-  ['make-list','model-list','year-list'].forEach(id => {
-    document.getElementById(id).classList.remove('open');
-  });
-  ['make-trigger','model-trigger','year-trigger'].forEach(id => {
-    document.getElementById(id).classList.remove('open');
+function openSheet(title, items, onSelect, showSearch) {
+  sheetTitle.textContent = title;
+  sheetSearch.value = '';
+  sheetSearchWrap.style.display = showSearch ? 'block' : 'none';
+  renderSheetOptions(items, onSelect, '');
+  overlay.classList.add('open');
+  if (showSearch) setTimeout(() => sheetSearch.focus(), 300);
+  resizeFrame();
+
+  sheetSearch.oninput = function() {
+    renderSheetOptions(items, onSelect, this.value);
+  };
+}
+
+function renderSheetOptions(items, onSelect, filter) {
+  sheetOptions.innerHTML = '';
+  const filtered = filter ? items.filter(i => i.toLowerCase().includes(filter.toLowerCase())) : items;
+  if (!filtered.length) {
+    sheetOptions.innerHTML = '<div class="dd-empty">No results</div>';
+    return;
+  }
+  filtered.forEach(function(item) {
+    const div = document.createElement('div');
+    div.className = 'dd-option';
+    div.textContent = item;
+    // Use both touchend and click for cross-device compatibility
+    function handleSelect(e) {
+      e.preventDefault();
+      closeSheet();
+      onSelect(item);
+    }
+    div.addEventListener('touchend', handleSelect, { passive: false });
+    div.addEventListener('click', handleSelect);
+    sheetOptions.appendChild(div);
   });
 }
 
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.dd')) closeAll();
-});
+function closeSheet() {
+  overlay.classList.remove('open');
+  sheetSearch.oninput = null;
+  resizeFrame();
+}
 
-// ── Badge helper ─────────────────────────────────────────────────────────
+// Close on overlay background tap
+overlay.addEventListener('touchend', function(e) { if (e.target === overlay) closeSheet(); });
+overlay.addEventListener('click', function(e) { if (e.target === overlay) closeSheet(); });
+document.getElementById('sheet-close').addEventListener('click', closeSheet);
+document.getElementById('sheet-close').addEventListener('touchend', function(e) { e.preventDefault(); closeSheet(); });
+
+// ── Helpers ───────────────────────────────────────────────────────────────
 function setBadge(n, state) {
   const b = document.getElementById('badge-' + n);
   b.className = 'step-badge' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
@@ -229,169 +291,133 @@ function sendValue(val) {
 }
 
 function resizeFrame() {
-  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-}
-
-// ── Make dropdown ─────────────────────────────────────────────────────────
-function renderMakes(filter) {
-  const optWrap = document.getElementById('make-options');
-  optWrap.innerHTML = '';
-  const filtered = filter ? makes.filter(m => m.toLowerCase().includes(filter.toLowerCase())) : makes;
-  if (!filtered.length) { optWrap.innerHTML = '<div class="dd-empty">No results</div>'; return; }
-  filtered.forEach(function(make) {
-    const div = document.createElement('div');
-    div.className = 'dd-option';
-    div.textContent = make;
-    div.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      closeAll();
-      onMakeSelect(make);
-    });
-    optWrap.appendChild(div);
-  });
-}
-
-document.getElementById('make-trigger').addEventListener('click', function() {
-  const list = document.getElementById('make-list');
-  if (list.classList.contains('open')) { closeAll(); return; }
-  closeAll();
-  renderMakes('');
-  list.classList.add('open');
-  this.classList.add('open');
-  const searchEl = document.getElementById('make-search');
-  searchEl.value = ''; searchEl.focus();
-  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
-});
-
-document.getElementById('make-search').addEventListener('input', function() {
-  renderMakes(this.value);
-});
-
-function onMakeSelect(make) {
-  selectedMake  = make;
-  selectedModel = '';
-  selectedYear  = '';
-  currentValue  = '';
-
-  document.getElementById('make-label').textContent = make;
-  document.getElementById('make-label').classList.remove('placeholder');
-  document.getElementById('make-hint').textContent = VEHICLE_DATA[make].length + ' models available';
-
-  // Reset model
-  const modelTrigger = document.getElementById('model-trigger');
-  document.getElementById('model-label').textContent = '— Select model —';
-  document.getElementById('model-label').classList.add('placeholder');
-  document.getElementById('model-hint').textContent = '';
-  modelTrigger.classList.remove('disabled');
-
-  // Reset year
-  document.getElementById('year-trigger').classList.add('disabled');
-  document.getElementById('year-label').textContent = 'Select a model first';
-  document.getElementById('year-label').classList.add('placeholder');
-  document.getElementById('year-hint').textContent = '';
-
-  document.getElementById('result-block').classList.remove('visible');
-  sendValue('');
-  setBadge(1, 'done'); setBadge(2, 'active'); setBadge(3, '');
-  resizeFrame();
-}
-
-// ── Model dropdown ────────────────────────────────────────────────────────
-function renderModels(filter) {
-  const models  = VEHICLE_DATA[selectedMake] || [];
-  const optWrap = document.getElementById('model-options');
-  optWrap.innerHTML = '';
-  const filtered = filter ? models.filter(m => m.toLowerCase().includes(filter.toLowerCase())) : models;
-  if (!filtered.length) { optWrap.innerHTML = '<div class="dd-empty">No results</div>'; return; }
-  filtered.forEach(function(model) {
-    const div = document.createElement('div');
-    div.className = 'dd-option';
-    div.textContent = model;
-    div.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      closeAll();
-      selectedModel = model;
-      selectedYear  = '';
-      currentValue  = '';
-
-      document.getElementById('model-label').textContent = model;
-      document.getElementById('model-label').classList.remove('placeholder');
-      document.getElementById('model-hint').textContent = '';
-
-      document.getElementById('year-trigger').classList.remove('disabled');
-      document.getElementById('year-label').textContent = '— Select year —';
-      document.getElementById('year-label').classList.remove('placeholder');
-      document.getElementById('year-hint').textContent = 'Model years 1981–' + (new Date().getFullYear() + 1);
-
-      document.getElementById('result-block').classList.remove('visible');
-      sendValue('');
-      setBadge(2, 'done'); setBadge(3, 'active');
-      resizeFrame();
-    });
-    optWrap.appendChild(div);
-  });
-}
-
-document.getElementById('model-trigger').addEventListener('click', function() {
-  if (this.classList.contains('disabled')) return;
-  const list = document.getElementById('model-list');
-  if (list.classList.contains('open')) { closeAll(); return; }
-  closeAll();
-  list.classList.add('open');
-  this.classList.add('open');
-  renderModels('');
-  const searchEl = document.getElementById('model-search');
-  searchEl.value = '';
-  searchEl.focus();
-  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
-});
-
-document.getElementById('model-search').addEventListener('input', function() {
-  renderModels(this.value);
-});
-
-// ── Year dropdown ─────────────────────────────────────────────────────────
-function renderYears() {
-  const optWrap = document.getElementById('year-options');
-  optWrap.innerHTML = '';
-  const currentYear = new Date().getFullYear() + 1;
-  for (let y = currentYear; y >= 1981; y--) {
-    const div = document.createElement('div');
-    div.className = 'dd-option';
-    div.textContent = y;
-    div.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      closeAll();
-      selectedYear = String(y);
-      const vehicle = selectedYear + ' ' + selectedMake + ' ' + selectedModel;
-      currentValue  = vehicle;
-
-      document.getElementById('year-label').textContent = y;
-      document.getElementById('year-label').classList.remove('placeholder');
-
-      document.getElementById('result-text').textContent = vehicle;
-      document.getElementById('tag-make').textContent  = selectedMake;
-      document.getElementById('tag-model').textContent = selectedModel;
-      document.getElementById('tag-year').textContent  = selectedYear;
-      document.getElementById('result-block').classList.add('visible');
-
-      setBadge(3, 'done');
-      sendValue(vehicle);
-      resizeFrame();
-    });
-    optWrap.appendChild(div);
+  if (insideJotForm) {
+    JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
   }
 }
 
-document.getElementById('year-trigger').addEventListener('click', function() {
+function tap(el, fn) {
+  // Unified tap handler — fires on touchend to avoid 300ms delay, falls back to click
+  let touched = false;
+  el.addEventListener('touchend', function(e) {
+    touched = true;
+    e.preventDefault();
+    fn.call(this, e);
+    setTimeout(() => { touched = false; }, 500);
+  }, { passive: false });
+  el.addEventListener('click', function(e) {
+    if (!touched) fn.call(this, e);
+  });
+}
+
+// ── Make trigger ──────────────────────────────────────────────────────────
+tap(document.getElementById('make-trigger'), function() {
+  openSheet('Select Make', makes, function(make) {
+    selectedMake  = make;
+    selectedModel = '';
+    selectedYear  = '';
+    currentValue  = '';
+
+    document.getElementById('make-label').textContent = make;
+    document.getElementById('make-label').classList.remove('placeholder');
+    document.getElementById('make-hint').textContent = VEHICLE_DATA[make].length + ' models available';
+
+    document.getElementById('model-trigger').classList.remove('disabled');
+    document.getElementById('model-label').textContent = '— Select model —';
+    document.getElementById('model-label').classList.add('placeholder');
+    document.getElementById('model-hint').textContent = '';
+
+    document.getElementById('year-trigger').classList.add('disabled');
+    document.getElementById('year-label').textContent = 'Select a model first';
+    document.getElementById('year-label').classList.add('placeholder');
+    document.getElementById('year-hint').textContent = '';
+
+    document.getElementById('result-block').classList.remove('visible');
+    sendValue('');
+    setBadge(1, 'done'); setBadge(2, 'active'); setBadge(3, '');
+    resizeFrame();
+  }, true);
+});
+
+// ── Model trigger ─────────────────────────────────────────────────────────
+tap(document.getElementById('model-trigger'), function() {
   if (this.classList.contains('disabled')) return;
-  const list = document.getElementById('year-list');
-  if (list.classList.contains('open')) { closeAll(); return; }
-  closeAll();
-  renderYears();
-  list.classList.add('open');
-  this.classList.add('open');
-  if (insideJotForm) JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 40 });
+  const models = VEHICLE_DATA[selectedMake] || [];
+  openSheet('Select Model', models, function(model) {
+    selectedModel = model;
+    selectedYear  = '';
+    currentValue  = '';
+
+    document.getElementById('model-label').textContent = model;
+    document.getElementById('model-label').classList.remove('placeholder');
+    document.getElementById('model-hint').textContent = '';
+
+    document.getElementById('year-trigger').classList.remove('disabled');
+    document.getElementById('year-label').textContent = '— Select year —';
+    document.getElementById('year-label').classList.remove('placeholder');
+    document.getElementById('year-hint').textContent = 'Model years 1981–' + (new Date().getFullYear() + 1);
+
+    document.getElementById('result-block').classList.remove('visible');
+    sendValue('');
+    setBadge(2, 'done'); setBadge(3, 'active');
+    resizeFrame();
+  }, true);
+});
+
+// ── Year trigger ──────────────────────────────────────────────────────────
+tap(document.getElementById('year-trigger'), function() {
+  if (this.classList.contains('disabled')) return;
+  const currentYear = new Date().getFullYear() + 1;
+  const years = [];
+  for (let y = currentYear; y >= 1981; y--) years.push(String(y));
+  openSheet('Select Year', years, function(year) {
+    selectedYear = year;
+    const vehicle = year + ' ' + selectedMake + ' ' + selectedModel;
+    currentValue  = vehicle;
+
+    document.getElementById('year-label').textContent = year;
+    document.getElementById('year-label').classList.remove('placeholder');
+    document.getElementById('year-hint').textContent = '';
+
+    document.getElementById('result-text').textContent = vehicle;
+    document.getElementById('tag-make').textContent  = selectedMake;
+    document.getElementById('tag-model').textContent = selectedModel;
+    document.getElementById('tag-year').textContent  = year;
+    document.getElementById('result-block').classList.add('visible');
+
+    setBadge(3, 'done');
+    sendValue(vehicle);
+    resizeFrame();
+  }, false);
+});
+
+// ── Copy & Reset ──────────────────────────────────────────────────────────
+tap(document.getElementById('copy-btn'), function() {
+  if (!currentValue) return;
+  navigator.clipboard.writeText(currentValue).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy'; }, 1800);
+  });
+});
+
+tap(document.getElementById('reset-btn'), function() {
+  selectedMake = ''; selectedModel = ''; selectedYear = ''; currentValue = '';
+  document.getElementById('make-label').textContent  = '— Select make —';
+  document.getElementById('make-label').classList.add('placeholder');
+  document.getElementById('model-label').textContent = 'Select a make first';
+  document.getElementById('model-label').classList.add('placeholder');
+  document.getElementById('year-label').textContent  = 'Select a model first';
+  document.getElementById('year-label').classList.add('placeholder');
+  document.getElementById('make-hint').textContent   = makes.length + ' makes available';
+  document.getElementById('model-hint').textContent  = '';
+  document.getElementById('year-hint').textContent   = '';
+  document.getElementById('model-trigger').classList.add('disabled');
+  document.getElementById('year-trigger').classList.add('disabled');
+  document.getElementById('result-block').classList.remove('visible');
+  setBadge(1, 'active'); setBadge(2, ''); setBadge(3, '');
+  sendValue('');
+  resizeFrame();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────
@@ -412,34 +438,6 @@ if (insideJotForm) {
   });
 } else {
   init();
-}
-
-// ── Copy & Reset ──────────────────────────────────────────────────────────
-function copyResult() {
-  navigator.clipboard.writeText(currentValue).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-    setTimeout(() => { btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy'; }, 1800);
-  });
-}
-
-function resetAll() {
-  selectedMake = ''; selectedModel = ''; selectedYear = ''; currentValue = '';
-  document.getElementById('make-label').textContent  = '— Select make —';
-  document.getElementById('make-label').classList.add('placeholder');
-  document.getElementById('model-label').textContent = 'Select a make first';
-  document.getElementById('model-label').classList.add('placeholder');
-  document.getElementById('year-label').textContent  = 'Select a model first';
-  document.getElementById('year-label').classList.add('placeholder');
-  document.getElementById('make-hint').textContent   = makes.length + ' makes available';
-  document.getElementById('model-hint').textContent  = '';
-  document.getElementById('year-hint').textContent   = '';
-  document.getElementById('model-trigger').classList.add('disabled');
-  document.getElementById('year-trigger').classList.add('disabled');
-  document.getElementById('result-block').classList.remove('visible');
-  setBadge(1, 'active'); setBadge(2, ''); setBadge(3, '');
-  sendValue('');
-  resizeFrame();
 }
 </script>
 </body>
